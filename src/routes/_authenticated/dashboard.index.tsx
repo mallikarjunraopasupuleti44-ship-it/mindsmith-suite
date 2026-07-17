@@ -66,12 +66,17 @@ function DashboardHome() {
 
   const hasMission = !!projectId && !!project.data;
   const tasks = project.data?.tasks ?? [];
-  const isActive = hasMission && tasks.some((t: any) => t.status !== "approved");
+  const isWorking = hasMission && tasks.some((t: any) => t.status === "working");
+  const hasPending = hasMission && tasks.some((t: any) => t.status !== "approved");
 
-  return isActive ? (
+  return isWorking ? (
     <MissionControl projectId={projectId!} />
   ) : (
-    <IdleDashboard />
+    <IdleDashboard
+      resumeMission={hasPending ? (project.data?.project?.mission ?? null) : null}
+      onResume={hasPending ? () => qc.invalidateQueries({ queryKey: ["project", projectId] }) : undefined}
+      projectIdToResume={hasPending ? projectId : null}
+    />
   );
 }
 
