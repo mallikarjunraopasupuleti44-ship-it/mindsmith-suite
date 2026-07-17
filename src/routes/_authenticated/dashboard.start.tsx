@@ -26,6 +26,7 @@ const AGENTS = ["planner", "marketing", "finance", "operations", "website"] as c
 function StartPage() {
   const { seed } = Route.useSearch();
   const [input, setInput] = useState("");
+  const [language, setLanguage] = useState<"english" | "hindi" | "telugu">("english");
   const [briefingFor, setBriefingFor] = useState<string | null>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -43,10 +44,10 @@ function StartPage() {
       const { projectId } = await start({ data: { mission } });
       void (async () => {
         try {
-          await run({ data: { projectId, agentId: "planner" } });
+          await run({ data: { projectId, agentId: "planner", language } });
           await Promise.all(
             AGENTS.filter((a) => a !== "planner").map((agentId) =>
-              run({ data: { projectId, agentId } }).catch((e) => console.error(agentId, e)),
+              run({ data: { projectId, agentId, language } }).catch((e) => console.error(agentId, e)),
             ),
           );
         } catch (e) {
@@ -125,7 +126,32 @@ function StartPage() {
         </p>
       </div>
 
+      <div className="flex items-center gap-2 animate-rise-in" style={{ animationDelay: "60ms" }}>
+        <span className="text-xs uppercase tracking-[0.2em] text-slate-500 font-mono">Response language</span>
+        <div className="glass-pill flex gap-1 p-1">
+          {([
+            { id: "english", label: "English" },
+            { id: "hindi", label: "हिन्दी" },
+            { id: "telugu", label: "తెలుగు" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setLanguage(opt.id)}
+              disabled={hasActive}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                language === opt.id
+                  ? "bg-primary text-primary-foreground shadow"
+                  : "text-slate-600 hover:text-foreground"
+              } disabled:opacity-40`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="glass-pill flex flex-col md:flex-row items-stretch gap-2 p-2 animate-rise-in" style={{ animationDelay: "80ms" }}>
+
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}

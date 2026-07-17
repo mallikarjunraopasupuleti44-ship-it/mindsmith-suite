@@ -6,11 +6,17 @@ import { AGENT_SCHEMAS, AGENT_CATEGORY, type AgentId } from "./agent-schemas";
 import { systemPrompt, userPrompt } from "./agent-prompts.server";
 import { agentDefaults, mergeDefaults } from "./agent-defaults";
 
+function languageLabel(code: string): string {
+  const map: Record<string, string> = { telugu: "Telugu (తెలుగు)", hindi: "Hindi (हिन्दी)", english: "English" };
+  return map[code] ?? code;
+}
+
 export async function runAgentImpl(
   supabase: SupabaseClient,
   userId: string,
   projectId: string,
   agentId: AgentId,
+  language?: string | null,
 ) {
   const [{ data: project }, { data: profile }] = await Promise.all([
     supabase.from("projects").select("mission").eq("id", projectId).maybeSingle(),
@@ -51,7 +57,10 @@ export async function runAgentImpl(
 
   const schema = AGENT_SCHEMAS[agentId] as any;
   const sys = systemPrompt(agentId);
-  const usr = userPrompt(agentId, project.mission, brand, docContext, profile ?? null);
+  const langInstruction = language && language !== "english"
+    ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: Write ALL string values in the JSON response in ${languageLabel(language)} using its native script. Keep JSON keys, hex colors, numbers, dates, and week labels (e.g. "Weeks 1-4", "M1") in English. Brand names may stay in English if that's the natural form.`
+    : "";
+  const usr = userPrompt(agentId, project.mission, brand, docContext, profile ?? null) + langInstruction;
 
   // Attempt with retry
   const attempt = await generateWithRetry(agentId, sys, usr, schema);

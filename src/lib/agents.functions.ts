@@ -129,11 +129,15 @@ function descriptionFor(id: AgentId): string {
 export const runAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ projectId: z.string().uuid(), agentId: z.enum(AGENT_IDS) }).parse(d)
+    z.object({
+      projectId: z.string().uuid(),
+      agentId: z.enum(AGENT_IDS),
+      language: z.enum(["english", "hindi", "telugu"]).optional(),
+    }).parse(d)
   )
   .handler(async ({ data, context }) => {
     const { runAgentImpl } = await import("./agents-runner.server");
-    return runAgentImpl(context.supabase, context.userId, data.projectId, data.agentId);
+    return runAgentImpl(context.supabase, context.userId, data.projectId, data.agentId, data.language);
   });
 
 export const approveDeliverable = createServerFn({ method: "POST" })
