@@ -22,9 +22,11 @@ import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
 import { Route as AuthenticatedDashboardKnowledgeRouteImport } from './routes/_authenticated/dashboard.knowledge'
 import { Route as AuthenticatedDashboardHistoryRouteImport } from './routes/_authenticated/dashboard.history'
+import { Route as AuthenticatedDashboardEmployeesRouteImport } from './routes/_authenticated/dashboard.employees'
 import { Route as AuthenticatedDashboardAutomationRouteImport } from './routes/_authenticated/dashboard.automation'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AuthenticatedDashboardEmployeesSlugRouteImport } from './routes/_authenticated/dashboard.employees.$slug'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -98,6 +100,12 @@ const AuthenticatedDashboardHistoryRoute =
     path: '/history',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardEmployeesRoute =
+  AuthenticatedDashboardEmployeesRouteImport.update({
+    id: '/employees',
+    path: '/employees',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardAutomationRoute =
   AuthenticatedDashboardAutomationRouteImport.update({
     id: '/automation',
@@ -115,6 +123,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardEmployeesSlugRoute =
+  AuthenticatedDashboardEmployeesSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedDashboardEmployeesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,12 +140,14 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/automation': typeof AuthenticatedDashboardAutomationRoute
+  '/dashboard/employees': typeof AuthenticatedDashboardEmployeesRouteWithChildren
   '/dashboard/history': typeof AuthenticatedDashboardHistoryRoute
   '/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,12 +158,14 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/automation': typeof AuthenticatedDashboardAutomationRoute
+  '/dashboard/employees': typeof AuthenticatedDashboardEmployeesRouteWithChildren
   '/dashboard/history': typeof AuthenticatedDashboardHistoryRoute
   '/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,12 +179,14 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/dashboard/automation': typeof AuthenticatedDashboardAutomationRoute
+  '/_authenticated/dashboard/employees': typeof AuthenticatedDashboardEmployeesRouteWithChildren
   '/_authenticated/dashboard/history': typeof AuthenticatedDashboardHistoryRoute
   '/_authenticated/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
   '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/_authenticated/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,12 +200,14 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/automation'
+    | '/dashboard/employees'
     | '/dashboard/history'
     | '/dashboard/knowledge'
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/start'
     | '/dashboard/'
+    | '/dashboard/employees/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,12 +218,14 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/automation'
+    | '/dashboard/employees'
     | '/dashboard/history'
     | '/dashboard/knowledge'
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/start'
     | '/dashboard'
+    | '/dashboard/employees/$slug'
   id:
     | '__root__'
     | '/'
@@ -214,12 +238,14 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/dashboard/automation'
+    | '/_authenticated/dashboard/employees'
     | '/_authenticated/dashboard/history'
     | '/_authenticated/dashboard/knowledge'
     | '/_authenticated/dashboard/profile'
     | '/_authenticated/dashboard/settings'
     | '/_authenticated/dashboard/start'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/employees/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -326,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardHistoryRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/employees': {
+      id: '/_authenticated/dashboard/employees'
+      path: '/employees'
+      fullPath: '/dashboard/employees'
+      preLoaderRoute: typeof AuthenticatedDashboardEmployeesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/automation': {
       id: '/_authenticated/dashboard/automation'
       path: '/automation'
@@ -347,11 +380,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard/employees/$slug': {
+      id: '/_authenticated/dashboard/employees/$slug'
+      path: '/$slug'
+      fullPath: '/dashboard/employees/$slug'
+      preLoaderRoute: typeof AuthenticatedDashboardEmployeesSlugRouteImport
+      parentRoute: typeof AuthenticatedDashboardEmployeesRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardEmployeesRouteChildren {
+  AuthenticatedDashboardEmployeesSlugRoute: typeof AuthenticatedDashboardEmployeesSlugRoute
+}
+
+const AuthenticatedDashboardEmployeesRouteChildren: AuthenticatedDashboardEmployeesRouteChildren =
+  {
+    AuthenticatedDashboardEmployeesSlugRoute:
+      AuthenticatedDashboardEmployeesSlugRoute,
+  }
+
+const AuthenticatedDashboardEmployeesRouteWithChildren =
+  AuthenticatedDashboardEmployeesRoute._addFileChildren(
+    AuthenticatedDashboardEmployeesRouteChildren,
+  )
+
 interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardAutomationRoute: typeof AuthenticatedDashboardAutomationRoute
+  AuthenticatedDashboardEmployeesRoute: typeof AuthenticatedDashboardEmployeesRouteWithChildren
   AuthenticatedDashboardHistoryRoute: typeof AuthenticatedDashboardHistoryRoute
   AuthenticatedDashboardKnowledgeRoute: typeof AuthenticatedDashboardKnowledgeRoute
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
@@ -364,6 +420,8 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
     AuthenticatedDashboardAutomationRoute:
       AuthenticatedDashboardAutomationRoute,
+    AuthenticatedDashboardEmployeesRoute:
+      AuthenticatedDashboardEmployeesRouteWithChildren,
     AuthenticatedDashboardHistoryRoute: AuthenticatedDashboardHistoryRoute,
     AuthenticatedDashboardKnowledgeRoute: AuthenticatedDashboardKnowledgeRoute,
     AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
