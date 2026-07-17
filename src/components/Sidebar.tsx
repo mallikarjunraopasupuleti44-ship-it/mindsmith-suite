@@ -22,7 +22,7 @@ const mainNav: Item[] = [
   { to: "/dashboard/start", label: "Start Business", icon: Rocket },
   { to: "/dashboard/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/dashboard/automation", label: "Automation", icon: Zap },
-  { label: "Reports", icon: BarChart3, disabled: true },
+  { to: "/dashboard/reports", label: "Reports", icon: BarChart3 },
   { to: "/dashboard/history", label: "History", icon: History },
 ];
 
