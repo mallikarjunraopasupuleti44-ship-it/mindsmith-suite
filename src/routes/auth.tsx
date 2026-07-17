@@ -67,7 +67,7 @@ function AuthPage() {
         if (error) throw error;
         navigate({ to: safeRedirect(redirect) as any, replace: true });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -76,9 +76,12 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        setInfo("Account created. If email confirmation is required, check your inbox.");
-        const { data } = await supabase.auth.getUser();
-        if (data.user) navigate({ to: safeRedirect(redirect) as any, replace: true });
+        // Auto-confirm is enabled — ensure a session by signing in if one wasn't returned.
+        if (!signUpData.session) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInErr) throw signInErr;
+        }
+        navigate({ to: safeRedirect(redirect) as any, replace: true });
       }
     } catch (err) {
       setError((err as Error).message);
