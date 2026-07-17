@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Plus, Send, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { MicButton } from "@/components/MicButton";
 import {
   getEmployeeBySlug,
   listThreads,
@@ -224,6 +225,10 @@ function EmployeeChatPage() {
                 rows={2}
                 placeholder={`Message your ${emp.role_title}…`}
                 className="flex-1 resize-none rounded-xl border border-white/60 bg-white/60 px-3 py-2 text-sm outline-none focus:border-primary/40"
+              />
+              <MicButton
+                disabled={send.isPending}
+                onTranscript={(t) => setInput((v) => (v ? v + " " + t : t))}
               />
               <button
                 onClick={submit}

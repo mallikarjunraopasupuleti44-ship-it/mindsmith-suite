@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Rocket, AlertTriangle } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
+import { MicButton } from "@/components/MicButton";
 import { startMission, runAgent } from "@/lib/agents.functions";
 import { getActiveMission, abandonMission } from "@/lib/history.functions";
 
@@ -132,6 +133,10 @@ function StartPage() {
           placeholder="I want to start a bakery"
           disabled={hasActive}
           className="flex-1 bg-transparent px-4 py-3 text-base outline-none placeholder:text-slate-400 disabled:opacity-40"
+        />
+        <MicButton
+          disabled={hasActive}
+          onTranscript={(t) => setInput((v) => (v ? v + " " + t : t))}
         />
         <button
           onClick={deploy}
