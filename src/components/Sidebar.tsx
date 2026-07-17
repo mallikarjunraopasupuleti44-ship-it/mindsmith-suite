@@ -1,27 +1,33 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Users, Rocket, BookOpen, Zap, BarChart3, History,
-  Settings, User, LogOut,
+  LayoutDashboard, Rocket, BookOpen, LogOut, User,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const nav = [
-  { to: "/dashboard/command-center", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/dashboard/command-center", label: "AI Employees", icon: Users, hash: "team" },
+  { to: "/dashboard/command-center", label: "Command Center", icon: LayoutDashboard },
   { to: "/dashboard/start", label: "Start Business", icon: Rocket },
-  { to: "/dashboard/command-center", label: "Knowledge", icon: BookOpen, disabled: true },
-  { to: "/dashboard/command-center", label: "Automation", icon: Zap, hash: "automation" },
-  { to: "/dashboard/command-center", label: "Reports", icon: BarChart3, disabled: true },
-  { to: "/dashboard/command-center", label: "History", icon: History, disabled: true },
-];
-
-const footer = [
-  { label: "Settings", icon: Settings },
-  { label: "Profile", icon: User },
-  { label: "Logout", icon: LogOut },
+  { to: "/dashboard/knowledge", label: "Knowledge", icon: BookOpen },
 ];
 
 export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+  }, []);
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   return (
     <aside className="hidden md:flex md:w-[260px] shrink-0 flex-col p-4">
@@ -38,7 +44,7 @@ export function Sidebar() {
 
         <nav className="flex flex-col gap-1">
           {nav.map((item) => {
-            const active = pathname === item.to && !item.hash;
+            const active = pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
               <Link
@@ -49,8 +55,7 @@ export function Sidebar() {
                   active
                     ? "bg-[rgba(91,79,233,0.1)] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"
                     : "text-slate-600 hover:bg-white/50",
-                  item.disabled && "opacity-50 pointer-events-none",
-                ].filter(Boolean).join(" ")}
+                ].join(" ")}
               >
                 <Icon className="h-4 w-4" strokeWidth={2} />
                 {item.label}
@@ -61,15 +66,17 @@ export function Sidebar() {
 
         <div className="mt-auto pt-6">
           <div className="my-3 h-px bg-slate-200/60" />
-          {footer.map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-slate-600 hover:bg-white/50 transition"
-            >
-              <Icon className="h-4 w-4" strokeWidth={2} />
-              {label}
-            </button>
-          ))}
+          <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm text-slate-600">
+            <User className="h-4 w-4" />
+            <span className="truncate">{email ?? "—"}</span>
+          </div>
+          <button
+            onClick={signOut}
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-slate-600 hover:bg-white/50 transition"
+          >
+            <LogOut className="h-4 w-4" strokeWidth={2} />
+            Sign out
+          </button>
         </div>
       </div>
     </aside>
