@@ -27,6 +27,7 @@ import { Route as AuthenticatedDashboardEmployeesRouteImport } from './routes/_a
 import { Route as AuthenticatedDashboardAutomationRouteImport } from './routes/_authenticated/dashboard.automation'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiPublicHooksPublishScheduledRouteImport } from './routes/api/public/hooks/publish-scheduled'
 import { Route as AuthenticatedDashboardEmployeesSlugRouteImport } from './routes/_authenticated/dashboard.employees.$slug'
 
 const McpRoute = McpRouteImport.update({
@@ -129,6 +130,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksPublishScheduledRoute =
+  ApiPublicHooksPublishScheduledRouteImport.update({
+    id: '/api/public/hooks/publish-scheduled',
+    path: '/api/public/hooks/publish-scheduled',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedDashboardEmployeesSlugRoute =
   AuthenticatedDashboardEmployeesSlugRouteImport.update({
     id: '/$slug',
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
+  '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,6 +182,7 @@ export interface FileRoutesByTo {
   '/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
+  '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/start': typeof AuthenticatedDashboardStartRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/employees/$slug': typeof AuthenticatedDashboardEmployeesSlugRoute
+  '/api/public/hooks/publish-scheduled': typeof ApiPublicHooksPublishScheduledRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/dashboard/start'
     | '/dashboard/'
     | '/dashboard/employees/$slug'
+    | '/api/public/hooks/publish-scheduled'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/dashboard/start'
     | '/dashboard'
     | '/dashboard/employees/$slug'
+    | '/api/public/hooks/publish-scheduled'
   id:
     | '__root__'
     | '/'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/start'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/employees/$slug'
+    | '/api/public/hooks/publish-scheduled'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -270,6 +283,7 @@ export interface RootRouteChildren {
   ApiTranscribeRoute: typeof ApiTranscribeRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicHooksPublishScheduledRoute: typeof ApiPublicHooksPublishScheduledRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -400,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/publish-scheduled': {
+      id: '/api/public/hooks/publish-scheduled'
+      path: '/api/public/hooks/publish-scheduled'
+      fullPath: '/api/public/hooks/publish-scheduled'
+      preLoaderRoute: typeof ApiPublicHooksPublishScheduledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard/employees/$slug': {
       id: '/_authenticated/dashboard/employees/$slug'
       path: '/$slug'
@@ -477,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranscribeRoute: ApiTranscribeRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicHooksPublishScheduledRoute: ApiPublicHooksPublishScheduledRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
