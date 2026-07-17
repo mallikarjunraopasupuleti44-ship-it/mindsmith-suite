@@ -172,14 +172,16 @@ function IdleDashboard({
           )}
         </div>
       )}
-      <section className="glass-panel p-10 md:p-14 text-center animate-rise-in">
-        <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/5 pulse-violet">
-          <AtomLogo size={96} />
+      <section className="glass-panel p-6 sm:p-10 md:p-14 text-center animate-rise-in">
+        <div className="mx-auto mb-6 flex h-20 w-20 sm:h-28 sm:w-28 items-center justify-center rounded-full bg-primary/5 pulse-violet">
+          <AtomLogo size={72} className="sm:hidden" />
+          <AtomLogo size={96} className="hidden sm:block" />
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
-          {greeting()}, {username}
+        <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 break-words">
+          {greeting()},{" "}
+          <span className="break-all">{username}</span>
         </h1>
-        <p className="mt-3 text-slate-500">
+        <p className="mt-3 text-sm sm:text-base text-slate-500">
           Your AI Business Operating System is online. Agents are standing by.
         </p>
 
