@@ -222,7 +222,7 @@ function EmployeeChatPage() {
                   }
                 }}
                 rows={2}
-                placeholder={`Message ${emp.name.split(" ")[0]}…`}
+                placeholder={`Message your ${emp.role_title}…`}
                 className="flex-1 resize-none rounded-xl border border-white/60 bg-white/60 px-3 py-2 text-sm outline-none focus:border-primary/40"
               />
               <button
