@@ -111,7 +111,7 @@ function IdleDashboard({
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) return { user: null, profile: null };
-      const { data: p } = await supabase.from("profiles").select("username").eq("id", data.user.id).maybeSingle();
+      const { data: p } = await supabase.from("profiles").select("username, company_name").eq("id", data.user.id).maybeSingle();
       return { user: data.user, profile: p };
     },
   });
@@ -134,7 +134,7 @@ function IdleDashboard({
   });
 
   const username = userAndProfile?.profile?.username ?? "there";
-  const profileComplete = !!userAndProfile?.profile?.username;
+  const profileComplete = !!userAndProfile?.profile?.company_name;
 
   const chips = [
     profileComplete

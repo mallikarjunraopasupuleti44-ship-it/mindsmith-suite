@@ -1,11 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { Rocket } from "lucide-react";
+import { Rocket, AlertTriangle } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
 import { startMission, runAgent } from "@/lib/agents.functions";
+import { getActiveMission, abandonMission } from "@/lib/history.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/start")({
   validateSearch: z.object({ seed: z.string().optional() }),
@@ -29,6 +30,10 @@ function StartPage() {
   const qc = useQueryClient();
   const start = useServerFn(startMission);
   const run = useServerFn(runAgent);
+  const activeFn = useServerFn(getActiveMission);
+  const abandonFn = useServerFn(abandonMission);
+
+  const active = useQuery({ queryKey: ["active-mission"], queryFn: () => activeFn() });
 
   useEffect(() => { if (seed) setInput(seed + " "); }, [seed]);
 
@@ -53,13 +58,22 @@ function StartPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["latest-project"] });
+      qc.invalidateQueries({ queryKey: ["active-mission"] });
       navigate({ to: "/dashboard" });
+    },
+  });
+
+  const abandon = useMutation({
+    mutationFn: async (projectId: string) => abandonFn({ data: { projectId } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["active-mission"] });
+      qc.invalidateQueries({ queryKey: ["latest-project"] });
     },
   });
 
   const deploy = () => {
     const mission = input.trim();
-    if (!mission) return;
+    if (!mission || active.data) return;
     setBriefingFor(mission);
   };
 
@@ -68,9 +82,34 @@ function StartPage() {
     mutation.mutate(briefingFor);
   };
 
+  const hasActive = !!active.data;
+
   return (
     <div className="space-y-8">
       {briefingFor && <MissionBriefing mission={briefingFor} onDone={onBriefingDone} />}
+
+      {hasActive && (
+        <div className="glass-panel border border-amber-300/60 bg-amber-50/40 p-5 animate-rise-in">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+            <div className="flex-1">
+              <div className="font-display font-semibold text-amber-900">You have a mission in progress</div>
+              <p className="mt-1 text-sm text-slate-700">
+                "{active.data!.mission}" — finish reviewing it or abandon it to start a new one.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to="/dashboard" className="btn-primary">Open current mission</Link>
+                <button
+                  onClick={() => abandon.mutate(active.data!.id)}
+                  disabled={abandon.isPending}
+                  className="inline-flex items-center gap-2 rounded-xl border border-rose-300 bg-white/60 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50">
+                  Abandon this mission
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="animate-rise-in">
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// START A MISSION</div>
@@ -91,11 +130,12 @@ function StartPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && deploy()}
           placeholder="I want to start a bakery"
-          className="flex-1 bg-transparent px-4 py-3 text-base outline-none placeholder:text-slate-400"
+          disabled={hasActive}
+          className="flex-1 bg-transparent px-4 py-3 text-base outline-none placeholder:text-slate-400 disabled:opacity-40"
         />
         <button
           onClick={deploy}
-          disabled={!input.trim() || mutation.isPending}
+          disabled={!input.trim() || mutation.isPending || hasActive}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         >
           <Rocket className="h-4 w-4" />
@@ -108,7 +148,8 @@ function StartPage() {
           <button
             key={e}
             onClick={() => setInput(e)}
-            className="glass-pill px-4 py-2 text-sm text-slate-600 hover:text-foreground transition"
+            disabled={hasActive}
+            className="glass-pill px-4 py-2 text-sm text-slate-600 hover:text-foreground transition disabled:opacity-40"
           >
             {e}
           </button>
@@ -123,3 +164,4 @@ function StartPage() {
     </div>
   );
 }
+

@@ -11,12 +11,11 @@ export async function runAgentImpl(
   projectId: string,
   agentId: AgentId,
 ) {
-  // Fetch project + optional planner deliverable for brand context
-  const { data: project } = await supabase
-    .from("projects")
-    .select("mission")
-    .eq("id", projectId)
-    .maybeSingle();
+  // Fetch project + founder/business context + optional planner deliverable
+  const [{ data: project }, { data: profile }] = await Promise.all([
+    supabase.from("projects").select("mission").eq("id", projectId).maybeSingle(),
+    supabase.from("profiles").select("company_name, industry, timezone").eq("id", userId).maybeSingle(),
+  ]);
   if (!project) throw new Error("Project not found");
 
   let brand: string | null = null;
@@ -65,7 +64,7 @@ export async function runAgentImpl(
       model,
       output: Output.object({ schema }),
       system: systemPrompt(agentId),
-      prompt: userPrompt(agentId, project.mission, brand, docContext),
+      prompt: userPrompt(agentId, project.mission, brand, docContext, profile ?? null),
     });
     deliverable = output;
   } catch (err) {

@@ -1,6 +1,12 @@
 // Server-only: per-agent system + user prompts.
 import type { AgentId } from "./agent-schemas";
 
+export type BusinessContext = {
+  company_name?: string | null;
+  industry?: string | null;
+  timezone?: string | null;
+} | null;
+
 export function systemPrompt(agentId: AgentId): string {
   switch (agentId) {
     case "planner":
@@ -31,11 +37,23 @@ Return brand + tagline + 5 landing-page section names. Tagline should be one sho
   }
 }
 
-export function userPrompt(agentId: AgentId, mission: string, brand: string | null, docContext: string): string {
+export function userPrompt(
+  agentId: AgentId,
+  mission: string,
+  brand: string | null,
+  docContext: string,
+  business: BusinessContext = null,
+): string {
   const base = `Business idea: ${mission}`;
+  const bizLines: string[] = [];
+  if (business?.company_name) bizLines.push(`Company: ${business.company_name}`);
+  if (business?.industry) bizLines.push(`Industry: ${business.industry}`);
+  if (business?.timezone) bizLines.push(`Timezone: ${business.timezone}`);
+  const bizBlock = bizLines.length ? `\nFounder context:\n${bizLines.join("\n")}` : "";
   const brandLine = brand ? `\nBrand identity (from Planner): ${brand}` : "";
   const docs = docContext
     ? `\n\nContext from the user's uploaded business documents (use where relevant):\n${docContext}`
     : "";
-  return `${base}${brandLine}${docs}`;
+  void agentId;
+  return `${base}${bizBlock}${brandLine}${docs}`;
 }
