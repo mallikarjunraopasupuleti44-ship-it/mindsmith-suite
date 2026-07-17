@@ -119,7 +119,7 @@ function StartPage() {
 
   return (
     <div className="space-y-8">
-      {briefingFor && <MissionBriefing mission={briefingFor} onDone={onBriefingDone} />}
+      {briefingFor && <MissionBriefing mission={briefingFor} onDone={onBriefingDone} onStop={stopDeployment} />}
 
       {hasActive && (
         <div className="glass-panel border border-amber-300/60 bg-amber-50/40 p-5 animate-rise-in">
