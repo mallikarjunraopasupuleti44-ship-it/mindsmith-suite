@@ -194,7 +194,7 @@ function EmployeeChatPage() {
           <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
             {(!activeThreadId || (messagesQ.data && messagesQ.data.messages.length === 0)) && (
               <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-                Ask {emp.name.split(" ")[0]} anything about {emp.role_title.toLowerCase()}. They'll pull from
+                Ask your {emp.role_title} anything about {emp.role_title.toLowerCase()}. They'll pull from
                 your Knowledge base when relevant.
               </div>
             )}
