@@ -18,7 +18,7 @@ type Item = {
 
 const mainNav: Item[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { label: "AI Employees", icon: Users, disabled: true },
+  { to: "/dashboard/employees", label: "AI Employees", icon: Users },
   { to: "/dashboard/start", label: "Start Business", icon: Rocket },
   { to: "/dashboard/knowledge", label: "Knowledge", icon: BookOpen },
   { to: "/dashboard/automation", label: "Automation", icon: Zap },
