@@ -44,10 +44,10 @@ function StartPage() {
       const { projectId } = await start({ data: { mission } });
       void (async () => {
         try {
-          await run({ data: { projectId, agentId: "planner" } });
+          await run({ data: { projectId, agentId: "planner", language } });
           await Promise.all(
             AGENTS.filter((a) => a !== "planner").map((agentId) =>
-              run({ data: { projectId, agentId } }).catch((e) => console.error(agentId, e)),
+              run({ data: { projectId, agentId, language } }).catch((e) => console.error(agentId, e)),
             ),
           );
         } catch (e) {
