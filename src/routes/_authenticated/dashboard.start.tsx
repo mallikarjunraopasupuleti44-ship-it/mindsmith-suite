@@ -39,15 +39,29 @@ function StartPage() {
 
   useEffect(() => { if (seed) setInput(seed + " "); }, [seed]);
 
+  const stoppedRef = useRef(false);
+  const startedProjectRef = useRef<string | null>(null);
+
   const mutation = useMutation({
     mutationFn: async (mission: string) => {
+      stoppedRef.current = false;
+      startedProjectRef.current = null;
       const { projectId } = await start({ data: { mission } });
+      startedProjectRef.current = projectId;
+      if (stoppedRef.current) {
+        await abandonFn({ data: { projectId } }).catch(() => {});
+        throw new Error("Stopped");
+      }
       void (async () => {
         try {
+          if (stoppedRef.current) return;
           await run({ data: { projectId, agentId: "planner", language } });
+          if (stoppedRef.current) return;
           await Promise.all(
             AGENTS.filter((a) => a !== "planner").map((agentId) =>
-              run({ data: { projectId, agentId, language } }).catch((e) => console.error(agentId, e)),
+              stoppedRef.current
+                ? Promise.resolve()
+                : run({ data: { projectId, agentId, language } }).catch((e: unknown) => console.error(agentId, e)),
             ),
           );
         } catch (e) {
@@ -76,11 +90,28 @@ function StartPage() {
   const deploy = () => {
     const mission = input.trim();
     if (!mission || active.data) return;
+    stoppedRef.current = false;
     setBriefingFor(mission);
   };
 
+  const stopDeployment = () => {
+    stoppedRef.current = true;
+    setBriefingFor(null);
+    const pid = startedProjectRef.current;
+    if (pid) {
+      abandonFn({ data: { projectId: pid } })
+        .catch(() => {})
+        .finally(() => {
+          startedProjectRef.current = null;
+          qc.invalidateQueries({ queryKey: ["active-mission"] });
+          qc.invalidateQueries({ queryKey: ["latest-project"] });
+        });
+    }
+    mutation.reset();
+  };
+
   const onBriefingDone = () => {
-    if (!briefingFor) return;
+    if (!briefingFor || stoppedRef.current) return;
     mutation.mutate(briefingFor);
   };
 
