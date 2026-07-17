@@ -204,7 +204,7 @@ function EmployeeChatPage() {
             {send.isPending && (
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
-                {emp.name.split(" ")[0]} is thinking…
+                Your {emp.role_title} is thinking…
               </div>
             )}
           </div>
