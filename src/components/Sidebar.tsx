@@ -2,7 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Rocket, BookOpen, LogOut, Users, Zap,
-  BarChart3, History, Settings, UserCircle2,
+  BarChart3, History, Settings, UserCircle2, Menu, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,6 +36,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [username, setUsername] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -47,6 +48,9 @@ export function Sidebar() {
     })();
     return () => { mounted = false; };
   }, []);
+
+  // Close drawer on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -81,38 +85,82 @@ export function Sidebar() {
     );
   };
 
+  const panel = (
+    <div className="glass-panel flex h-full flex-col p-5">
+      <Link to="/dashboard" className="mb-6 flex items-center gap-2.5">
+        <AtomLogo size={38} />
+        <div className="font-display text-lg font-bold tracking-tight">
+          Aura <span className="text-primary">AI</span>
+        </div>
+      </Link>
+
+      <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        Main Menu
+      </div>
+      <nav className="flex flex-col gap-1">{mainNav.map(renderItem)}</nav>
+
+      <div className="mt-auto pt-6">
+        <div className="my-3 h-px bg-slate-200/60" />
+        <nav className="flex flex-col gap-1">{footerNav.map(renderItem)}</nav>
+        {username && (
+          <div className="mt-2 truncate px-3 py-1 text-xs text-slate-400">
+            @{username}
+          </div>
+        )}
+        <button
+          onClick={signOut}
+          className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50/70 transition"
+        >
+          <LogOut className="h-4 w-4" strokeWidth={2} />
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <aside className="hidden md:flex md:w-[260px] shrink-0 flex-col p-4">
-      <div className="glass-panel flex h-full flex-col p-5">
-        <Link to="/dashboard" className="mb-6 flex items-center gap-2.5">
-          <AtomLogo size={38} />
-          <div className="font-display text-lg font-bold tracking-tight">
+    <>
+      {/* Mobile top bar */}
+      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/40 bg-white/70 px-4 py-3 backdrop-blur-xl">
+        <Link to="/dashboard" className="flex items-center gap-2 min-w-0">
+          <AtomLogo size={32} />
+          <div className="font-display text-base font-bold tracking-tight truncate">
             Aura <span className="text-primary">AI</span>
           </div>
         </Link>
-
-        <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-          Main Menu
-        </div>
-        <nav className="flex flex-col gap-1">{mainNav.map(renderItem)}</nav>
-
-        <div className="mt-auto pt-6">
-          <div className="my-3 h-px bg-slate-200/60" />
-          <nav className="flex flex-col gap-1">{footerNav.map(renderItem)}</nav>
-          {username && (
-            <div className="mt-2 truncate px-3 py-1 text-xs text-slate-400">
-              @{username}
-            </div>
-          )}
-          <button
-            onClick={signOut}
-            className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50/70 transition"
-          >
-            <LogOut className="h-4 w-4" strokeWidth={2} />
-            Logout
-          </button>
-        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          className="glass-pill inline-flex h-10 w-10 shrink-0 items-center justify-center text-slate-700"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
       </div>
-    </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex md:w-[260px] shrink-0 flex-col p-4">
+        {panel}
+      </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="relative z-10 flex w-[280px] max-w-[85vw] flex-col p-3 animate-in slide-in-from-left">
+            <button
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              className="absolute right-5 top-6 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            {panel}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
