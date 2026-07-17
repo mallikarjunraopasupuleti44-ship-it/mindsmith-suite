@@ -26,6 +26,7 @@ const AGENTS = ["planner", "marketing", "finance", "operations", "website"] as c
 function StartPage() {
   const { seed } = Route.useSearch();
   const [input, setInput] = useState("");
+  const [language, setLanguage] = useState<"english" | "hindi" | "telugu">("english");
   const [briefingFor, setBriefingFor] = useState<string | null>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
