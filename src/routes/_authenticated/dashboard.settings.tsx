@@ -36,7 +36,7 @@ function SettingsPage() {
     <div className="space-y-8 max-w-3xl">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Settings</div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Account & Workspace</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight">Account & Workspace</h1>
         <p className="mt-2 text-sm text-slate-500">
           Personal info lives in <Link to="/dashboard/profile" className="text-primary hover:underline">Profile</Link>.
         </p>
