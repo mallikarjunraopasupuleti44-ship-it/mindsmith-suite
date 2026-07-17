@@ -21,14 +21,14 @@ const mainNav: Item[] = [
   { label: "AI Employees", icon: Users, disabled: true },
   { to: "/dashboard/start", label: "Start Business", icon: Rocket },
   { to: "/dashboard/knowledge", label: "Knowledge", icon: BookOpen },
-  { label: "Automation", icon: Zap, disabled: true },
+  { to: "/dashboard/automation", label: "Automation", icon: Zap },
   { label: "Reports", icon: BarChart3, disabled: true },
-  { label: "History", icon: History, disabled: true },
+  { to: "/dashboard/history", label: "History", icon: History },
 ];
 
 const footerNav: Item[] = [
-  { label: "Settings", icon: Settings, disabled: true },
-  { label: "Profile", icon: UserCircle2, disabled: true },
+  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard/profile", label: "Profile", icon: UserCircle2 },
 ];
 
 export function Sidebar() {

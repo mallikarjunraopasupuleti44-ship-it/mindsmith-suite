@@ -60,9 +60,31 @@ export const startMission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ mission: z.string().min(3).max(300) }).parse(d))
   .handler(async ({ data, context }) => {
+    // Single-active-mission rule: block if there's already a project not completed/abandoned with pending tasks.
+    const { data: existing } = await context.supabase
+      .from("projects")
+      .select("id, mission")
+      .not("status", "in", "(completed,abandoned)")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (existing && existing.length > 0) {
+      const p = existing[0];
+      const { count } = await context.supabase
+        .from("agent_tasks")
+        .select("id", { count: "exact", head: true })
+        .eq("project_id", p.id)
+        .neq("status", "approved");
+      if ((count ?? 0) > 0) {
+        const err = new Error(`You have a mission in progress: "${p.mission}". Finish reviewing it or abandon it before starting a new one.`);
+        (err as any).code = "ACTIVE_MISSION_EXISTS";
+        (err as any).activeProjectId = p.id;
+        throw err;
+      }
+    }
+
     const { data: project, error } = await context.supabase
       .from("projects")
-      .insert({ user_id: context.userId, mission: data.mission })
+      .insert({ user_id: context.userId, mission: data.mission, title: data.mission.slice(0, 80), status: "running" })
       .select()
       .single();
     if (error) throw new Error(error.message);

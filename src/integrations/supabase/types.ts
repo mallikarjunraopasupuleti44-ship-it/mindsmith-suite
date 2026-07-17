@@ -90,6 +90,33 @@ export type Database = {
           },
         ]
       }
+      automation_channels: {
+        Row: {
+          connected: boolean
+          created_at: string
+          external_account_id: string | null
+          id: string
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          connected?: boolean
+          created_at?: string
+          external_account_id?: string | null
+          id?: string
+          platform: string
+          user_id: string
+        }
+        Update: {
+          connected?: boolean
+          created_at?: string
+          external_account_id?: string | null
+          id?: string
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deliverable_sources: {
         Row: {
           agent_task_id: string
@@ -217,22 +244,78 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          body: string | null
+          created_at: string
+          hashtags: string[] | null
+          id: string
+          platform: string | null
+          project_id: string
+          scheduled_at: string | null
+          status: string
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          platform?: string | null
+          project_id: string
+          scheduled_at?: string | null
+          status?: string
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          platform?: string | null
+          project_id?: string
+          scheduled_at?: string | null
+          status?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_url: string | null
+          company_name: string | null
           created_at: string
           id: string
+          industry: string | null
+          timezone: string | null
           updated_at: string
           username: string
         }
         Insert: {
+          avatar_url?: string | null
+          company_name?: string | null
           created_at?: string
           id: string
+          industry?: string | null
+          timezone?: string | null
           updated_at?: string
           username: string
         }
         Update: {
+          avatar_url?: string | null
+          company_name?: string | null
           created_at?: string
           id?: string
+          industry?: string | null
+          timezone?: string | null
           updated_at?: string
           username?: string
         }
@@ -240,23 +323,32 @@ export type Database = {
       }
       projects: {
         Row: {
+          completed_at: string | null
           created_at: string
           id: string
           mission: string
+          status: string
+          title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           id?: string
           mission: string
+          status?: string
+          title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           id?: string
           mission?: string
+          status?: string
+          title?: string | null
           updated_at?: string
           user_id?: string
         }
