@@ -42,7 +42,7 @@ function ReportsPage() {
     <div className="space-y-8">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Reports</div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Your growth on Aura AI</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight break-words">Your growth on Aura AI</h1>
         <p className="mt-2 text-sm text-slate-500">
           A live snapshot of what you've built here — missions, deliverables, posts, and knowledge — auto-refreshing every 30 seconds.
         </p>

@@ -26,7 +26,7 @@ function EmployeesIndex() {
     <div className="space-y-6">
       <div className="animate-rise-in">
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// AI EMPLOYEES</div>
-        <h1 className="mt-2 font-display text-4xl font-bold tracking-tight">Your AI team</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-4xl font-bold tracking-tight">Your AI team</h1>
         <p className="mt-2 max-w-2xl text-slate-600">
           Each employee has a specialty and pulls context from your Knowledge base. Open one to
           give them a direct task or start a conversation.

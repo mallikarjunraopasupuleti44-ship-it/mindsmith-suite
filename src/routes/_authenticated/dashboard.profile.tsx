@@ -28,7 +28,7 @@ function ProfilePage() {
     <div className="space-y-8 max-w-3xl">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Profile</div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Your profile</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight">Your profile</h1>
       </div>
 
       <section className="glass-panel p-6 flex flex-col md:flex-row items-start gap-6">

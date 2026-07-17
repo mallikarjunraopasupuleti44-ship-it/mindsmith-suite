@@ -28,7 +28,7 @@ function HistoryPage() {
     <div className="space-y-6">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// History</div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Past missions</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight">Past missions</h1>
       </div>
 
       {missions.length === 0 ? (

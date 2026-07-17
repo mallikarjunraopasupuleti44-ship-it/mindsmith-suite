@@ -96,7 +96,7 @@ function AutomationPage() {
     <div className="space-y-8">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Automation</div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">Channels & scheduled posts</h1>
+        <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight break-words">Channels & scheduled posts</h1>
         <p className="mt-2 text-sm text-slate-500">
           Import drafts from your marketing agent, edit them, and schedule when they should go live.
         </p>
