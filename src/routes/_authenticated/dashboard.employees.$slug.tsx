@@ -138,8 +138,7 @@ function EmployeeChatPage() {
               {emp.icon}
             </div>
             <div className="min-w-0">
-              <div className="font-display text-sm font-semibold truncate">{emp.name}</div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500 truncate">{emp.role_title}</div>
+              <div className="font-display text-sm font-semibold truncate">{emp.role_title}</div>
             </div>
           </div>
           <button
