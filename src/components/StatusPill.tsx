@@ -1,4 +1,5 @@
-import type { AgentStatus } from "@/lib/mission-store";
+// Simple status-pill component. Accepts server-side task statuses.
+export type AgentStatus = "idle" | "working" | "needs_review" | "approved";
 
 const config: Record<AgentStatus, { label: string; dot: string; text: string; bg: string }> = {
   idle:         { label: "Idle",         dot: "#94A3B8", text: "#64748B", bg: "rgba(148,163,184,0.12)" },
@@ -7,8 +8,8 @@ const config: Record<AgentStatus, { label: string; dot: string; text: string; bg
   approved:     { label: "Approved",     dot: "#10B981", text: "#047857", bg: "rgba(16,185,129,0.14)" },
 };
 
-export function StatusPill({ status }: { status: AgentStatus }) {
-  const c = config[status];
+export function StatusPill({ status }: { status: string }) {
+  const c = config[(status as AgentStatus)] ?? config.idle;
   const pulse = status === "working";
   return (
     <span

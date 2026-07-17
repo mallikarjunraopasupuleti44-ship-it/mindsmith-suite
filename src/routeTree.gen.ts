@@ -9,14 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardStartRouteImport } from './routes/dashboard.start'
-import { Route as DashboardCommandCenterRouteImport } from './routes/dashboard.command-center'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDashboardStartRouteImport } from './routes/_authenticated/dashboard.start'
+import { Route as AuthenticatedDashboardKnowledgeRouteImport } from './routes/_authenticated/dashboard.knowledge'
+import { Route as AuthenticatedDashboardCommandCenterRouteImport } from './routes/_authenticated/dashboard.command-center'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -24,65 +31,104 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardStartRoute = DashboardStartRouteImport.update({
-  id: '/start',
-  path: '/start',
-  getParentRoute: () => DashboardRoute,
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const DashboardCommandCenterRoute = DashboardCommandCenterRouteImport.update({
-  id: '/command-center',
-  path: '/command-center',
-  getParentRoute: () => DashboardRoute,
-} as any)
+const AuthenticatedDashboardStartRoute =
+  AuthenticatedDashboardStartRouteImport.update({
+    id: '/start',
+    path: '/start',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardKnowledgeRoute =
+  AuthenticatedDashboardKnowledgeRouteImport.update({
+    id: '/knowledge',
+    path: '/knowledge',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardCommandCenterRoute =
+  AuthenticatedDashboardCommandCenterRouteImport.update({
+    id: '/command-center',
+    path: '/command-center',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/command-center': typeof DashboardCommandCenterRoute
-  '/dashboard/start': typeof DashboardStartRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/dashboard/command-center': typeof AuthenticatedDashboardCommandCenterRoute
+  '/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
+  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/command-center': typeof DashboardCommandCenterRoute
-  '/dashboard/start': typeof DashboardStartRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/dashboard/command-center': typeof AuthenticatedDashboardCommandCenterRoute
+  '/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
+  '/dashboard/start': typeof AuthenticatedDashboardStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/command-center': typeof DashboardCommandCenterRoute
-  '/dashboard/start': typeof DashboardStartRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/_authenticated/dashboard/command-center': typeof AuthenticatedDashboardCommandCenterRoute
+  '/_authenticated/dashboard/knowledge': typeof AuthenticatedDashboardKnowledgeRoute
+  '/_authenticated/dashboard/start': typeof AuthenticatedDashboardStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/dashboard'
     | '/dashboard/command-center'
+    | '/dashboard/knowledge'
     | '/dashboard/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/dashboard/command-center' | '/dashboard/start'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/dashboard/command-center'
+    | '/dashboard/knowledge'
+    | '/dashboard/start'
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
-    | '/dashboard/command-center'
-    | '/dashboard/start'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/dashboard/command-center'
+    | '/_authenticated/dashboard/knowledge'
+    | '/_authenticated/dashboard/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -92,41 +138,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/start': {
-      id: '/dashboard/start'
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/start': {
+      id: '/_authenticated/dashboard/start'
       path: '/start'
       fullPath: '/dashboard/start'
-      preLoaderRoute: typeof DashboardStartRouteImport
-      parentRoute: typeof DashboardRoute
+      preLoaderRoute: typeof AuthenticatedDashboardStartRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
     }
-    '/dashboard/command-center': {
-      id: '/dashboard/command-center'
+    '/_authenticated/dashboard/knowledge': {
+      id: '/_authenticated/dashboard/knowledge'
+      path: '/knowledge'
+      fullPath: '/dashboard/knowledge'
+      preLoaderRoute: typeof AuthenticatedDashboardKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/command-center': {
+      id: '/_authenticated/dashboard/command-center'
       path: '/command-center'
       fullPath: '/dashboard/command-center'
-      preLoaderRoute: typeof DashboardCommandCenterRouteImport
-      parentRoute: typeof DashboardRoute
+      preLoaderRoute: typeof AuthenticatedDashboardCommandCenterRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
     }
   }
 }
 
-interface DashboardRouteChildren {
-  DashboardCommandCenterRoute: typeof DashboardCommandCenterRoute
-  DashboardStartRoute: typeof DashboardStartRoute
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardCommandCenterRoute: typeof AuthenticatedDashboardCommandCenterRoute
+  AuthenticatedDashboardKnowledgeRoute: typeof AuthenticatedDashboardKnowledgeRoute
+  AuthenticatedDashboardStartRoute: typeof AuthenticatedDashboardStartRoute
 }
 
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardCommandCenterRoute: DashboardCommandCenterRoute,
-  DashboardStartRoute: DashboardStartRoute,
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardCommandCenterRoute:
+      AuthenticatedDashboardCommandCenterRoute,
+    AuthenticatedDashboardKnowledgeRoute: AuthenticatedDashboardKnowledgeRoute,
+    AuthenticatedDashboardStartRoute: AuthenticatedDashboardStartRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
 }
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
-)
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

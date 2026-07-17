@@ -1,4 +1,5 @@
-import type { AgentId } from "./mission-store";
+import type { AgentId } from "./agent-schemas";
+export type { AgentId };
 
 export interface AgentMeta {
   id: AgentId;

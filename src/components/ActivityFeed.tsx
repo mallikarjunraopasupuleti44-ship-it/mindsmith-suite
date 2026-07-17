@@ -1,14 +1,13 @@
-import { useMissionStore } from "@/lib/mission-store";
 import { AGENT_MAP } from "@/lib/agents";
 
-function formatTs(ts: number) {
-  const d = new Date(ts);
+function formatTs(iso: string) {
+  const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
 
-export function ActivityFeed() {
-  const activity = useMissionStore((s) => s.activity);
+interface Event { id: string; agent: string; message: string; created_at: string; }
 
+export function ActivityFeed({ events }: { events: Event[] }) {
   return (
     <div className="glass-panel flex h-full flex-col p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -23,17 +22,17 @@ export function ActivityFeed() {
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto pr-1">
-        {activity.length === 0 && (
+        {events.length === 0 && (
           <div className="font-mono text-xs text-muted-foreground py-8 text-center">
-            No activity yet. Start a mission to see your team work in real time.
+            No activity yet.
           </div>
         )}
-        {activity.map((e) => {
-          const meta = e.agent !== "system" ? AGENT_MAP[e.agent] : null;
+        {events.map((e) => {
+          const meta = e.agent !== "system" ? AGENT_MAP[e.agent as keyof typeof AGENT_MAP] : null;
           return (
             <div key={e.id} className="feed-in flex gap-3 rounded-xl px-2 py-1.5 hover:bg-white/40">
               <span className="font-mono text-[11px] text-slate-400 shrink-0 tabular-nums pt-0.5">
-                {formatTs(e.ts)}
+                {formatTs(e.created_at)}
               </span>
               <div className="min-w-0">
                 {meta ? (
