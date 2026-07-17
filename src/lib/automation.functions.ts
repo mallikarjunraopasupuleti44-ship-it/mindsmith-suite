@@ -209,7 +209,7 @@ export const regeneratePost = createServerFn({ method: "POST" })
       output: Output.object({ schema }),
     });
 
-    const out = (result as any).experimental_output as { title: string; body: string; hashtags: string[] };
+    const out = (result as any).output as { title: string; body: string; hashtags: string[] };
     const { error } = await context.supabase
       .from("posts")
       .update({
