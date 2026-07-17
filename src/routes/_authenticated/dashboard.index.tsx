@@ -149,12 +149,6 @@ function IdleDashboard({
             <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">// Pending mission</span>
             <span className="ml-3 text-slate-800">"{resumeMission}" — deliverables awaiting review.</span>
           </div>
-          <Link
-            to="/dashboard/command-center"
-            className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:-translate-y-0.5 transition-all"
-          >
-            Resume mission →
-          </Link>
         </div>
       )}
       <section className="glass-panel p-10 md:p-14 text-center animate-rise-in">
