@@ -6,6 +6,11 @@ import { AGENT_SCHEMAS, AGENT_CATEGORY, type AgentId } from "./agent-schemas";
 import { systemPrompt, userPrompt } from "./agent-prompts.server";
 import { agentDefaults, mergeDefaults } from "./agent-defaults";
 
+function languageLabel(code: string): string {
+  const map: Record<string, string> = { telugu: "Telugu (తెలుగు)", hindi: "Hindi (हिन्दी)", english: "English" };
+  return map[code] ?? code;
+}
+
 export async function runAgentImpl(
   supabase: SupabaseClient,
   userId: string,
