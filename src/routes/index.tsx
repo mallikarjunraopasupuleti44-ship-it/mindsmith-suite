@@ -68,7 +68,7 @@ function LandingPage() {
       {/* Hero */}
       <section className="mx-auto max-w-4xl px-6 pt-16 pb-20 text-center">
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Your AI co-founder</div>
-        <h1 className="mt-4 font-display text-5xl md:text-6xl font-bold tracking-tight leading-[1.05]">
+        <h1 className="mt-4 font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05] break-words">
           Deploy a team of AI agents on your business idea.
         </h1>
         <p className="mt-6 max-w-2xl mx-auto text-lg text-slate-600">
