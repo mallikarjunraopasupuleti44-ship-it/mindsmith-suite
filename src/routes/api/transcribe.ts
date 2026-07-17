@@ -45,8 +45,15 @@ export const Route = createFileRoute("/api/transcribe")({
           audio instanceof File && audio.name ? audio.name : "recording.wav";
 
         const upstream = new FormData();
-        upstream.append("model", "openai/gpt-4o-mini-transcribe");
+        // gpt-4o-transcribe gives higher multilingual accuracy than the mini
+        // variant. Omit `language` so the model auto-detects (English, Hindi,
+        // Telugu, Urdu, etc.) instead of assuming one language.
+        upstream.append("model", "openai/gpt-4o-transcribe");
         upstream.append("file", audio, filename);
+        upstream.append(
+          "prompt",
+          "The speaker may speak in English, Hindi, Telugu, or Urdu, and may switch between them mid-sentence. Transcribe each language in its native script.",
+        );
 
         const res = await fetch(
           "https://ai.gateway.lovable.dev/v1/audio/transcriptions",
