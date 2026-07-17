@@ -146,7 +146,7 @@ function StartPage() {
 
       <div className="animate-rise-in">
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// START A MISSION</div>
-        <h1 className="mt-2 font-display text-4xl md:text-5xl font-bold tracking-tight">
+        <h1 className="mt-2 font-display text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight break-words">
           What business do you want to build?
         </h1>
         <p className="mt-3 max-w-2xl text-slate-600">
