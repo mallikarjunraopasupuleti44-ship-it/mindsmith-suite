@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Rocket, AlertTriangle, Square } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
 import { MicButton } from "@/components/MicButton";
-import { getActiveMission, abandonMission } from "@/lib/history.functions";
+import { startMission, runAgent } from "@/lib/agents.functions";
 import { getActiveMission, abandonMission } from "@/lib/history.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/start")({
