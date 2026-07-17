@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { Rocket, AlertTriangle } from "lucide-react";
+import { Rocket, AlertTriangle, Square } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
 import { MicButton } from "@/components/MicButton";
 import { startMission, runAgent } from "@/lib/agents.functions";
@@ -39,15 +39,29 @@ function StartPage() {
 
   useEffect(() => { if (seed) setInput(seed + " "); }, [seed]);
 
+  const stoppedRef = useRef(false);
+  const startedProjectRef = useRef<string | null>(null);
+
   const mutation = useMutation({
     mutationFn: async (mission: string) => {
+      stoppedRef.current = false;
+      startedProjectRef.current = null;
       const { projectId } = await start({ data: { mission } });
+      startedProjectRef.current = projectId;
+      if (stoppedRef.current) {
+        await abandonFn({ data: { projectId } }).catch(() => {});
+        throw new Error("Stopped");
+      }
       void (async () => {
         try {
+          if (stoppedRef.current) return;
           await run({ data: { projectId, agentId: "planner", language } });
+          if (stoppedRef.current) return;
           await Promise.all(
             AGENTS.filter((a) => a !== "planner").map((agentId) =>
-              run({ data: { projectId, agentId, language } }).catch((e) => console.error(agentId, e)),
+              stoppedRef.current
+                ? Promise.resolve()
+                : run({ data: { projectId, agentId, language } }).catch((e: unknown) => console.error(agentId, e)),
             ),
           );
         } catch (e) {
@@ -76,11 +90,28 @@ function StartPage() {
   const deploy = () => {
     const mission = input.trim();
     if (!mission || active.data) return;
+    stoppedRef.current = false;
     setBriefingFor(mission);
   };
 
+  const stopDeployment = () => {
+    stoppedRef.current = true;
+    setBriefingFor(null);
+    const pid = startedProjectRef.current;
+    if (pid) {
+      abandonFn({ data: { projectId: pid } })
+        .catch(() => {})
+        .finally(() => {
+          startedProjectRef.current = null;
+          qc.invalidateQueries({ queryKey: ["active-mission"] });
+          qc.invalidateQueries({ queryKey: ["latest-project"] });
+        });
+    }
+    mutation.reset();
+  };
+
   const onBriefingDone = () => {
-    if (!briefingFor) return;
+    if (!briefingFor || stoppedRef.current) return;
     mutation.mutate(briefingFor);
   };
 
@@ -88,7 +119,7 @@ function StartPage() {
 
   return (
     <div className="space-y-8">
-      {briefingFor && <MissionBriefing mission={briefingFor} onDone={onBriefingDone} />}
+      {briefingFor && <MissionBriefing mission={briefingFor} onDone={onBriefingDone} onStop={stopDeployment} />}
 
       {hasActive && (
         <div className="glass-panel border border-amber-300/60 bg-amber-50/40 p-5 animate-rise-in">
@@ -164,14 +195,24 @@ function StartPage() {
           disabled={hasActive}
           onTranscript={(t) => setInput((v) => (v ? v + " " + t : t))}
         />
-        <button
-          onClick={deploy}
-          disabled={!input.trim() || mutation.isPending || hasActive}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        >
-          <Rocket className="h-4 w-4" />
-          {mutation.isPending ? "Deploying…" : "Deploy AI Team"}
-        </button>
+        {mutation.isPending || briefingFor ? (
+          <button
+            onClick={stopDeployment}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5 hover:bg-rose-700"
+          >
+            <Square className="h-4 w-4" fill="currentColor" />
+            Stop
+          </button>
+        ) : (
+          <button
+            onClick={deploy}
+            disabled={!input.trim() || hasActive}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          >
+            <Rocket className="h-4 w-4" />
+            Deploy AI Team
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2 animate-rise-in" style={{ animationDelay: "140ms" }}>
