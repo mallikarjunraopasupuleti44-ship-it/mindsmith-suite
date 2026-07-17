@@ -90,6 +90,54 @@ export type Database = {
           },
         ]
       }
+      ai_employees: {
+        Row: {
+          accent: string
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          output_schema: Json | null
+          role_title: string
+          slug: string
+          sort_order: number
+          specialty_description: string
+          system_prompt_template: string
+          updated_at: string
+        }
+        Insert: {
+          accent?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          output_schema?: Json | null
+          role_title: string
+          slug: string
+          sort_order?: number
+          specialty_description: string
+          system_prompt_template: string
+          updated_at?: string
+        }
+        Update: {
+          accent?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          output_schema?: Json | null
+          role_title?: string
+          slug?: string
+          sort_order?: number
+          specialty_description?: string
+          system_prompt_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       automation_channels: {
         Row: {
           connected: boolean
@@ -157,6 +205,7 @@ export type Database = {
         Row: {
           chunk_index: number
           chunk_text: string
+          chunk_tsv: unknown
           created_at: string
           document_id: string
           embedding: string | null
@@ -165,6 +214,7 @@ export type Database = {
         Insert: {
           chunk_index: number
           chunk_text: string
+          chunk_tsv?: unknown
           created_at?: string
           document_id: string
           embedding?: string | null
@@ -173,6 +223,7 @@ export type Database = {
         Update: {
           chunk_index?: number
           chunk_text?: string
+          chunk_tsv?: unknown
           created_at?: string
           document_id?: string
           embedding?: string | null
@@ -184,6 +235,79 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parts: Json | null
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          parts?: Json | null
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parts?: Json | null
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "employee_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_threads: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_threads_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "ai_employees"
             referencedColumns: ["id"]
           },
         ]
@@ -359,6 +483,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      keyword_match_document_chunks: {
+        Args: { match_count?: number; p_query: string; p_user_id: string }
+        Returns: {
+          category: string
+          chunk_text: string
+          document_id: string
+          file_name: string
+          id: string
+          rank: number
+        }[]
+      }
       match_document_chunks: {
         Args: {
           match_count?: number
