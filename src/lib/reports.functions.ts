@@ -19,7 +19,7 @@ export const getReport = createServerFn({ method: "GET" })
       supabase.from("agent_tasks").select("agent_id, status, project_id, updated_at, projects!inner(user_id)").eq("projects.user_id", userId),
       supabase.from("posts").select("id, platform, status, created_at, published_at, scheduled_at, projects!inner(user_id)").eq("projects.user_id", userId),
       supabase.from("knowledge_documents").select("id, status, category, uploaded_at").eq("user_id", userId),
-      supabase.from("ai_employees").select("id, name, role").eq("user_id", userId),
+      supabase.from("ai_employees").select("id, name, role_title").eq("is_active", true),
       supabase.from("activity_events").select("id, created_at, agent, message, projects!inner(user_id)").eq("projects.user_id", userId).order("created_at", { ascending: false }).limit(500),
       supabase.from("profiles").select("created_at").eq("id", userId).maybeSingle(),
     ]);
