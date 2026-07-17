@@ -53,8 +53,7 @@ function EmployeesIndex() {
                 {emp.icon}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-display text-lg font-semibold">{emp.name}</div>
-                <div className="text-xs uppercase tracking-wider text-slate-500">{emp.role_title}</div>
+                <div className="font-display text-lg font-semibold">{emp.role_title}</div>
                 <p className="mt-2 text-sm text-slate-600 line-clamp-2">{emp.specialty_description}</p>
               </div>
             </div>

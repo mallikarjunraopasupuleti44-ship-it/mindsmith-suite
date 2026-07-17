@@ -138,8 +138,7 @@ function EmployeeChatPage() {
               {emp.icon}
             </div>
             <div className="min-w-0">
-              <div className="font-display text-sm font-semibold truncate">{emp.name}</div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500 truncate">{emp.role_title}</div>
+              <div className="font-display text-sm font-semibold truncate">{emp.role_title}</div>
             </div>
           </div>
           <button
@@ -195,7 +194,7 @@ function EmployeeChatPage() {
           <div ref={scrollerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
             {(!activeThreadId || (messagesQ.data && messagesQ.data.messages.length === 0)) && (
               <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-                Ask {emp.name.split(" ")[0]} anything about {emp.role_title.toLowerCase()}. They'll pull from
+                Ask your {emp.role_title} anything about {emp.role_title.toLowerCase()}. They'll pull from
                 your Knowledge base when relevant.
               </div>
             )}
@@ -205,7 +204,7 @@ function EmployeeChatPage() {
             {send.isPending && (
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
-                {emp.name.split(" ")[0]} is thinking…
+                Your {emp.role_title} is thinking…
               </div>
             )}
           </div>
@@ -223,7 +222,7 @@ function EmployeeChatPage() {
                   }
                 }}
                 rows={2}
-                placeholder={`Message ${emp.name.split(" ")[0]}…`}
+                placeholder={`Message your ${emp.role_title}…`}
                 className="flex-1 resize-none rounded-xl border border-white/60 bg-white/60 px-3 py-2 text-sm outline-none focus:border-primary/40"
               />
               <button
