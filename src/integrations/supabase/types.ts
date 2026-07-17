@@ -376,9 +376,11 @@ export type Database = {
           id: string
           platform: string | null
           project_id: string
+          published_at: string | null
           scheduled_at: string | null
           status: string
           title: string | null
+          updated_at: string
         }
         Insert: {
           body?: string | null
@@ -387,9 +389,11 @@ export type Database = {
           id?: string
           platform?: string | null
           project_id: string
+          published_at?: string | null
           scheduled_at?: string | null
           status?: string
           title?: string | null
+          updated_at?: string
         }
         Update: {
           body?: string | null
@@ -398,9 +402,11 @@ export type Database = {
           id?: string
           platform?: string | null
           project_id?: string
+          published_at?: string | null
           scheduled_at?: string | null
           status?: string
           title?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
