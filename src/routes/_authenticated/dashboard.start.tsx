@@ -126,7 +126,32 @@ function StartPage() {
         </p>
       </div>
 
+      <div className="flex items-center gap-2 animate-rise-in" style={{ animationDelay: "60ms" }}>
+        <span className="text-xs uppercase tracking-[0.2em] text-slate-500 font-mono">Response language</span>
+        <div className="glass-pill flex gap-1 p-1">
+          {([
+            { id: "english", label: "English" },
+            { id: "hindi", label: "हिन्दी" },
+            { id: "telugu", label: "తెలుగు" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setLanguage(opt.id)}
+              disabled={hasActive}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                language === opt.id
+                  ? "bg-primary text-primary-foreground shadow"
+                  : "text-slate-600 hover:text-foreground"
+              } disabled:opacity-40`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="glass-pill flex flex-col md:flex-row items-stretch gap-2 p-2 animate-rise-in" style={{ animationDelay: "80ms" }}>
+
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
