@@ -1,13 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  LayoutDashboard, Rocket, BookOpen, LogOut, User,
-} from "lucide-react";
+import { LayoutDashboard, Rocket, BookOpen, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
 const nav = [
-  { to: "/dashboard/command-center", label: "Command Center", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/start", label: "Start Business", icon: Rocket },
   { to: "/dashboard/knowledge", label: "Knowledge", icon: BookOpen },
 ];
@@ -16,10 +14,19 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [username, setUsername] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!mounted || !data.user) return;
+      setEmail(data.user.email ?? null);
+      const { data: p } = await supabase.from("profiles").select("username").eq("id", data.user.id).maybeSingle();
+      if (mounted) setUsername(p?.username ?? null);
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const signOut = async () => {
@@ -32,7 +39,7 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex md:w-[260px] shrink-0 flex-col p-4">
       <div className="glass-panel flex h-full flex-col p-5">
-        <Link to="/dashboard/start" className="mb-8 flex items-center gap-2.5">
+        <Link to="/dashboard" className="mb-8 flex items-center gap-2.5">
           <div
             className="flex h-9 w-9 items-center justify-center rounded-xl text-white font-bold"
             style={{ background: "linear-gradient(135deg, #5B4FE9, #8B5CF6)" }}
@@ -44,7 +51,7 @@ export function Sidebar() {
 
         <nav className="flex flex-col gap-1">
           {nav.map((item) => {
-            const active = pathname.startsWith(item.to);
+            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
               <Link
@@ -68,7 +75,10 @@ export function Sidebar() {
           <div className="my-3 h-px bg-slate-200/60" />
           <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm text-slate-600">
             <User className="h-4 w-4" />
-            <span className="truncate">{email ?? "—"}</span>
+            <div className="min-w-0">
+              <div className="truncate font-medium text-foreground">{username ?? "—"}</div>
+              {email && <div className="truncate text-xs text-slate-400">{email}</div>}
+            </div>
           </div>
           <button
             onClick={signOut}

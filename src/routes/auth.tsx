@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { BackgroundOrbs } from "@/components/BackgroundOrbs";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({ redirect: z.string().optional() }),
@@ -11,27 +10,29 @@ export const Route = createFileRoute("/auth")({
 });
 
 function safeRedirect(target?: string): string {
-  if (!target) return "/dashboard/start";
+  if (!target) return "/dashboard";
   try {
-    // Only allow same-origin relative paths
     if (target.startsWith("/") && !target.startsWith("//")) return target;
     const u = new URL(target);
     if (typeof window !== "undefined" && u.origin === window.location.origin) return u.pathname + u.search;
   } catch { /* ignore */ }
-  return "/dashboard/start";
+  return "/dashboard";
 }
+
+const USERNAME_RE = /^[a-zA-Z0-9_]{3,24}$/;
 
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  // If already signed in, bounce
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: safeRedirect(redirect) as any, replace: true });
@@ -40,7 +41,26 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); setInfo(null); setBusy(true);
+    setError(null); setInfo(null);
+
+    if (mode === "signup") {
+      if (!USERNAME_RE.test(username)) {
+        setError("Username must be 3–24 letters, numbers, or underscores.");
+        return;
+      }
+      if (password !== confirm) {
+        setError("Passwords don't match.");
+        return;
+      }
+      // Pre-check uniqueness (auth.users trigger auto-suffixes, but we want to warn early)
+      const { data: taken } = await supabase.from("profiles").select("id").eq("username", username).maybeSingle();
+      if (taken) {
+        setError("That username is already taken.");
+        return;
+      }
+    }
+
+    setBusy(true);
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -50,11 +70,13 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}${safeRedirect(redirect)}` },
+          options: {
+            data: { username },
+            emailRedirectTo: `${window.location.origin}${safeRedirect(redirect)}`,
+          },
         });
         if (error) throw error;
         setInfo("Account created. If email confirmation is required, check your inbox.");
-        // If auto-confirm, session is set — try navigate
         const { data } = await supabase.auth.getUser();
         if (data.user) navigate({ to: safeRedirect(redirect) as any, replace: true });
       }
@@ -76,8 +98,7 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <BackgroundOrbs />
+    <div className="min-h-screen flex items-center justify-center px-4 py-10">
       <div className="glass-modal w-full max-w-md p-8 animate-rise-in">
         <Link to="/" className="flex items-center gap-2.5 mb-6">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl text-white font-bold" style={{ background: "linear-gradient(135deg, #5B4FE9, #8B5CF6)" }}>A</div>
@@ -104,12 +125,23 @@ function AuthPage() {
         </div>
 
         <form onSubmit={submit} className="space-y-3">
+          {mode === "signup" && (
+            <input
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              autoComplete="username"
+              className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
+            />
+          )}
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@work.com"
+            autoComplete="email"
             className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
           <input
@@ -119,8 +151,21 @@ function AuthPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
+            autoComplete={mode === "signin" ? "current-password" : "new-password"}
             className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
+          {mode === "signup" && (
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Confirm password"
+              autoComplete="new-password"
+              className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
+            />
+          )}
           <button
             type="submit"
             disabled={busy}

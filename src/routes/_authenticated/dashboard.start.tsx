@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { Rocket } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
 import { startMission, runAgent } from "@/lib/agents.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/start")({
+  validateSearch: z.object({ seed: z.string().optional() }),
   component: StartPage,
 });
 
@@ -20,6 +22,7 @@ const EXAMPLES = [
 const AGENTS = ["planner", "marketing", "finance", "operations", "website"] as const;
 
 function StartPage() {
+  const { seed } = Route.useSearch();
   const [input, setInput] = useState("");
   const [briefingFor, setBriefingFor] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -27,10 +30,11 @@ function StartPage() {
   const start = useServerFn(startMission);
   const run = useServerFn(runAgent);
 
+  useEffect(() => { if (seed) setInput(seed + " "); }, [seed]);
+
   const mutation = useMutation({
     mutationFn: async (mission: string) => {
       const { projectId } = await start({ data: { mission } });
-      // Planner first, then the rest — background, don't await
       void (async () => {
         try {
           await run({ data: { projectId, agentId: "planner" } });
@@ -47,9 +51,9 @@ function StartPage() {
       })();
       return projectId;
     },
-    onSuccess: (projectId) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["latest-project"] });
-      navigate({ to: "/dashboard/command-center", search: { projectId } });
+      navigate({ to: "/dashboard" });
     },
   });
 
