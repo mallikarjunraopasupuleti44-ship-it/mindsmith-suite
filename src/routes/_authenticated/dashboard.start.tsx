@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { Rocket, AlertTriangle } from "lucide-react";
+import { Rocket, AlertTriangle, Square } from "lucide-react";
 import { MissionBriefing } from "@/components/MissionBriefing";
 import { MicButton } from "@/components/MicButton";
 import { startMission, runAgent } from "@/lib/agents.functions";
+import { getActiveMission, abandonMission } from "@/lib/history.functions";
 import { getActiveMission, abandonMission } from "@/lib/history.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/start")({
