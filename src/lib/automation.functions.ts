@@ -121,7 +121,7 @@ export const updatePost = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertPostOwnership(context.supabase, context.userId, data.postId);
-    const patch: Record<string, unknown> = {};
+    const patch: { title?: string; body?: string; hashtags?: string[]; platform?: Platform } = {};
     if (data.title !== undefined) patch.title = data.title;
     if (data.body !== undefined) patch.body = data.body;
     if (data.hashtags !== undefined) patch.hashtags = data.hashtags;
@@ -206,7 +206,7 @@ export const regeneratePost = createServerFn({ method: "POST" })
         `Current post:\nTitle: ${full!.title ?? ""}\nBody: ${full!.body ?? ""}\nHashtags: ${(full!.hashtags ?? []).join(" ")}\n\n` +
         (data.instructions ? `User instructions: ${data.instructions}\n\n` : "") +
         `Rewrite it into one improved variant.`,
-      experimental_output: Output.object({ schema }),
+      output: Output.object({ schema }),
     });
 
     const out = (result as any).experimental_output as { title: string; body: string; hashtags: string[] };
