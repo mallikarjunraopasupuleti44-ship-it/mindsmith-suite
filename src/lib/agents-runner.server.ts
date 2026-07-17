@@ -11,6 +11,7 @@ export async function runAgentImpl(
   userId: string,
   projectId: string,
   agentId: AgentId,
+  language?: string | null,
 ) {
   const [{ data: project }, { data: profile }] = await Promise.all([
     supabase.from("projects").select("mission").eq("id", projectId).maybeSingle(),
