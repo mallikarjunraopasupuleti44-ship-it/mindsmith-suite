@@ -195,14 +195,24 @@ function StartPage() {
           disabled={hasActive}
           onTranscript={(t) => setInput((v) => (v ? v + " " + t : t))}
         />
-        <button
-          onClick={deploy}
-          disabled={!input.trim() || mutation.isPending || hasActive}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        >
-          <Rocket className="h-4 w-4" />
-          {mutation.isPending ? "Deploying…" : "Deploy AI Team"}
-        </button>
+        {mutation.isPending || briefingFor ? (
+          <button
+            onClick={stopDeployment}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-rose-500/20 transition-all hover:-translate-y-0.5 hover:bg-rose-700"
+          >
+            <Square className="h-4 w-4" fill="currentColor" />
+            Stop
+          </button>
+        ) : (
+          <button
+            onClick={deploy}
+            disabled={!input.trim() || hasActive}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          >
+            <Rocket className="h-4 w-4" />
+            Deploy AI Team
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2 animate-rise-in" style={{ animationDelay: "140ms" }}>
