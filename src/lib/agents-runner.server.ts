@@ -52,7 +52,10 @@ export async function runAgentImpl(
 
   const schema = AGENT_SCHEMAS[agentId] as any;
   const sys = systemPrompt(agentId);
-  const usr = userPrompt(agentId, project.mission, brand, docContext, profile ?? null);
+  const langInstruction = language && language !== "english"
+    ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: Write ALL string values in the JSON response in ${languageLabel(language)} using its native script. Keep JSON keys, hex colors, numbers, dates, and week labels (e.g. "Weeks 1-4", "M1") in English. Brand names may stay in English if that's the natural form.`
+    : "";
+  const usr = userPrompt(agentId, project.mission, brand, docContext, profile ?? null) + langInstruction;
 
   // Attempt with retry
   const attempt = await generateWithRetry(agentId, sys, usr, schema);
