@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fsdildpdpipsqwlrhukg.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "aura-ai-mcp",
+      "version": "0.1.0",
+      "title": "Aura AI"
+    },
+    "tools": [
+      {
+        "name": "list_missions",
+        "title": "List missions",
+        "description": "List the signed-in user's AI missions (business ideas) with status and creation time.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Max missions to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_mission",
+        "title": "Get mission",
+        "description": "Fetch a mission with all its agent deliverables and statuses.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "mission_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The mission (project) id."
+            }
+          },
+          "required": [
+            "mission_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_knowledge_documents",
+        "title": "List knowledge documents",
+        "description": "List the signed-in user's uploaded business documents in the knowledge base.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "category": {
+              "description": "Optional category filter (e.g. brand, finance, operations).",
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "start_mission",
+        "title": "Start mission",
+        "description": "Kick off a new AI mission for a business idea. Creates the project and queues the 5 agents (planner, marketing, finance, operations, website).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "mission": {
+              "type": "string",
+              "minLength": 4,
+              "maxLength": 400,
+              "description": "One-line description of the business idea."
+            }
+          },
+          "required": [
+            "mission"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
