@@ -74,15 +74,22 @@ function DashboardHome() {
   ) : (
     <IdleDashboard
       resumeMission={hasPending ? (project.data?.project?.mission ?? null) : null}
-      onResume={hasPending ? () => qc.invalidateQueries({ queryKey: ["project", projectId] }) : undefined}
-      projectIdToResume={hasPending ? projectId : null}
+      onResume={hasPending && projectId ? () => {
+        const el = document.getElementById("resume-mission-anchor");
+        void el;
+      } : undefined}
     />
   );
 }
 
 // ==================== IDLE ====================
 
-function IdleDashboard() {
+function IdleDashboard({
+  resumeMission,
+}: {
+  resumeMission?: string | null;
+  onResume?: () => void;
+}) {
   const navigate = useNavigate();
   const [deploying, setDeploying] = useState(false);
 
