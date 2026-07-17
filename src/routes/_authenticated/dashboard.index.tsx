@@ -11,6 +11,7 @@ import { AgentCard } from "@/components/AgentCard";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ReviewModal } from "@/components/ReviewModal";
 import { MissionBriefing } from "@/components/MissionBriefing";
+import { AtomLogo } from "@/components/AtomLogo";
 import { AGENTS } from "@/lib/agents";
 import type { AgentId } from "@/lib/agent-schemas";
 import { getLatestProject, getProject, startMission, runAgent } from "@/lib/agents.functions";
@@ -131,14 +132,13 @@ function IdleDashboard() {
   return (
     <div className="space-y-10">
       <section className="glass-panel p-10 md:p-14 text-center animate-rise-in">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl text-white text-4xl font-bold shadow-lg shadow-primary/25 pulse-violet"
-          style={{ background: "linear-gradient(135deg, #5B4FE9, #8B5CF6)" }}>
-          A
+        <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/5 pulse-violet">
+          <AtomLogo size={96} />
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
+        <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
           {greeting()}, {username}
         </h1>
-        <p className="mt-3 text-slate-600">
+        <p className="mt-3 text-slate-500">
           Your AI Business Operating System is online. Agents are standing by.
         </p>
 
