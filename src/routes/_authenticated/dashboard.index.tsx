@@ -98,6 +98,7 @@ function DashboardHome() {
 
 function IdleDashboard({
   resumeMission,
+  onResume,
 }: {
   resumeMission?: string | null;
   onResume?: () => void;
