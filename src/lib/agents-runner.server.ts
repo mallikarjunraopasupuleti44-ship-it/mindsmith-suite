@@ -60,7 +60,8 @@ export async function runAgentImpl(
   let errMsg: string | null = null;
 
   if (attempt.ok) {
-    deliverable = mergeDefaults(agentId, attempt.value);
+    const normalized = normalizeDeliverable(agentId, attempt.value);
+    deliverable = mergeDefaults(agentId, normalized);
   } else {
     console.error(`[agent:${agentId}] final failure`, {
       error: attempt.error,
