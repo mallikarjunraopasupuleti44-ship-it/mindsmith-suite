@@ -234,3 +234,78 @@ function titleFor(agentId: AgentId, d: any): string {
     website: `${brand} — Landing Page`,
   }[agentId];
 }
+
+// Coerce common LLM-shape variants back into the schema before merging defaults.
+function normalizeDeliverable(agentId: AgentId, v: any): any {
+  if (!v || typeof v !== "object") return v;
+  if (agentId === "planner") return normalizePlanner(v);
+  return v;
+}
+
+function toStringItem(x: any): string {
+  if (x == null) return "";
+  if (typeof x === "string") return x;
+  if (typeof x === "number" || typeof x === "boolean") return String(x);
+  // Common LLM object shapes → collapse to "Label — detail"
+  const label = x.name ?? x.title ?? x.stream ?? x.kpi ?? x.KPI ?? x.metric ?? x.phase ?? x.item ?? x.headline;
+  const detail = x.detail ?? x.details ?? x.description ?? x.target ?? x.value ?? x.body ?? x.actions ?? x.focus;
+  if (label && detail) return `${label} — ${detail}`;
+  if (label) return String(label);
+  if (detail) return String(detail);
+  try { return JSON.stringify(x); } catch { return ""; }
+}
+
+function normalizePlanner(v: any): any {
+  const out: any = { ...v };
+
+  // brand.voice sometimes comes as tagline / description
+  if (out.brand && typeof out.brand === "object") {
+    if (!out.brand.voice) {
+      out.brand.voice = out.brand.tagline ?? out.brand.description ?? out.brand.tone ?? "";
+    }
+  }
+
+  // market may be an object ({segments:[...], description}) or nested
+  if (out.market && typeof out.market === "object") {
+    const m = out.market;
+    if (Array.isArray(m.segments)) {
+      const segs = m.segments.map(toStringItem).filter(Boolean).join(" ");
+      out.market = [m.description, m.summary, segs].filter(Boolean).join(" ").trim();
+    } else if (Array.isArray(m)) {
+      out.market = m.map(toStringItem).filter(Boolean).join(" ");
+    } else {
+      out.market = m.description ?? m.summary ?? m.text ?? "";
+    }
+  }
+  if (!out.market && Array.isArray(out.segments)) {
+    out.market = out.segments.map(toStringItem).filter(Boolean).join(" ");
+  }
+
+  // edge sometimes nested under market
+  if (!Array.isArray(out.edge) && v.market && Array.isArray(v.market.edge)) {
+    out.edge = v.market.edge;
+  }
+  if (Array.isArray(out.edge)) out.edge = out.edge.map(toStringItem).filter(Boolean);
+
+  // revenue: strings, not objects
+  if (Array.isArray(out.revenue)) out.revenue = out.revenue.map(toStringItem).filter(Boolean);
+
+  // metrics: strings, not objects
+  if (Array.isArray(out.metrics)) out.metrics = out.metrics.map(toStringItem).filter(Boolean);
+
+  // roadmap: coerce {focus} → {actions}
+  if (Array.isArray(out.roadmap)) {
+    out.roadmap = out.roadmap.map((r: any) => ({
+      phase: String(r?.phase ?? ""),
+      weeks: String(r?.weeks ?? r?.timeline ?? ""),
+      actions: String(r?.actions ?? r?.focus ?? r?.description ?? r?.details ?? ""),
+    }));
+  }
+
+  // concept fallback from brand.tagline / first market sentence
+  if (!out.concept || typeof out.concept !== "string") {
+    out.concept = out.brand?.tagline ?? (typeof out.market === "string" ? out.market : "") ?? "";
+  }
+
+  return out;
+}
