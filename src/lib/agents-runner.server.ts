@@ -56,7 +56,7 @@ export async function runAgentImpl(
   // Call the model
   const gateway = createGateway();
   const model = gateway(CHAT_MODEL);
-  const schema = AGENT_SCHEMAS[agentId];
+  const schema = AGENT_SCHEMAS[agentId] as any;
 
   let deliverable: any = null;
   let errMsg: string | null = null;
