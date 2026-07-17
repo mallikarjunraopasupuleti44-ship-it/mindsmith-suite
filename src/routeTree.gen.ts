@@ -9,38 +9,82 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardStartRouteImport } from './routes/dashboard.start'
+import { Route as DashboardCommandCenterRouteImport } from './routes/dashboard.command-center'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardStartRoute = DashboardStartRouteImport.update({
+  id: '/start',
+  path: '/start',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCommandCenterRoute = DashboardCommandCenterRouteImport.update({
+  id: '/command-center',
+  path: '/command-center',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/command-center': typeof DashboardCommandCenterRoute
+  '/dashboard/start': typeof DashboardStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/command-center': typeof DashboardCommandCenterRoute
+  '/dashboard/start': typeof DashboardStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/command-center': typeof DashboardCommandCenterRoute
+  '/dashboard/start': typeof DashboardStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/dashboard/command-center'
+    | '/dashboard/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/dashboard' | '/dashboard/command-center' | '/dashboard/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/dashboard/command-center'
+    | '/dashboard/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +92,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/start': {
+      id: '/dashboard/start'
+      path: '/start'
+      fullPath: '/dashboard/start'
+      preLoaderRoute: typeof DashboardStartRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/command-center': {
+      id: '/dashboard/command-center'
+      path: '/command-center'
+      fullPath: '/dashboard/command-center'
+      preLoaderRoute: typeof DashboardCommandCenterRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardCommandCenterRoute: typeof DashboardCommandCenterRoute
+  DashboardStartRoute: typeof DashboardStartRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardCommandCenterRoute: DashboardCommandCenterRoute,
+  DashboardStartRoute: DashboardStartRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
