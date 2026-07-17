@@ -80,6 +80,11 @@ export const startMission = createServerFn({ method: "POST" })
         (err as any).activeProjectId = p.id;
         throw err;
       }
+      // All tasks approved — auto-complete the stale project so a new mission can start.
+      await context.supabase
+        .from("projects")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", p.id);
     }
 
     const { data: project, error } = await context.supabase
