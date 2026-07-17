@@ -66,18 +66,30 @@ function DashboardHome() {
 
   const hasMission = !!projectId && !!project.data;
   const tasks = project.data?.tasks ?? [];
-  const isActive = hasMission && tasks.some((t: any) => t.status !== "approved");
+  const isWorking = hasMission && tasks.some((t: any) => t.status === "working");
+  const hasPending = hasMission && tasks.some((t: any) => t.status !== "approved");
 
-  return isActive ? (
+  return isWorking ? (
     <MissionControl projectId={projectId!} />
   ) : (
-    <IdleDashboard />
+    <IdleDashboard
+      resumeMission={hasPending ? (project.data?.project?.mission ?? null) : null}
+      onResume={hasPending && projectId ? () => {
+        const el = document.getElementById("resume-mission-anchor");
+        void el;
+      } : undefined}
+    />
   );
 }
 
 // ==================== IDLE ====================
 
-function IdleDashboard() {
+function IdleDashboard({
+  resumeMission,
+}: {
+  resumeMission?: string | null;
+  onResume?: () => void;
+}) {
   const navigate = useNavigate();
   const [deploying, setDeploying] = useState(false);
 
@@ -131,6 +143,14 @@ function IdleDashboard() {
 
   return (
     <div className="space-y-10">
+      {resumeMission && (
+        <div className="glass flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
+          <div className="text-slate-600">
+            <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">// Pending mission</span>
+            <span className="ml-3 text-slate-800">"{resumeMission}" — deliverables awaiting review.</span>
+          </div>
+        </div>
+      )}
       <section className="glass-panel p-10 md:p-14 text-center animate-rise-in">
         <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-primary/5 pulse-violet">
           <AtomLogo size={96} />
