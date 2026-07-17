@@ -75,13 +75,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Aura AI — Your AI Co-founder" },
       { name: "description", content: "Deploy a team of 5 specialized AI agents to plan, market, finance, operate and launch your business." },
       { property: "og:title", content: "Aura AI — Your AI Co-founder" },
-      { property: "og:description", content: "A team of AI agents that turns your business idea into a plan, campaigns, financials, ops and a live landing page." },
+      { property: "og:description", content: "Deploy a team of 5 specialized AI agents to plan, market, finance, operate and launch your business." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Aura AI — Your AI Co-founder" },
+      { name: "twitter:description", content: "Deploy a team of 5 specialized AI agents to plan, market, finance, operate and launch your business." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/94c3cad1-6798-4f34-806a-94dd051b9c0f/id-preview-7a091951--09f2e32e-15de-4b62-b6c6-41d901133a0c.lovable.app-1784281762683.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/94c3cad1-6798-4f34-806a-94dd051b9c0f/id-preview-7a091951--09f2e32e-15de-4b62-b6c6-41d901133a0c.lovable.app-1784281762683.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
