@@ -34,6 +34,7 @@ function DashboardHome() {
   const qc = useQueryClient();
   const latestFn = useServerFn(getLatestProject);
   const projectFn = useServerFn(getProject);
+  const [viewMission, setViewMission] = useState(false);
 
   const latest = useQuery({ queryKey: ["latest-project"], queryFn: () => latestFn() });
   const projectId = latest.data?.id ?? null;
@@ -64,20 +65,31 @@ function DashboardHome() {
     return () => { supabase.removeChannel(channel); };
   }, [projectId, qc]);
 
-  const hasMission = !!projectId && !!project.data;
   const tasks = project.data?.tasks ?? [];
-  const isWorking = hasMission && tasks.some((t: any) => t.status === "working");
-  const hasPending = hasMission && tasks.some((t: any) => t.status !== "approved");
+  const isWorking = !!projectId && tasks.some((t: any) => t.status === "working");
+  const hasPending = !!projectId && tasks.some((t: any) => t.status !== "approved");
 
-  return isWorking ? (
-    <MissionControl projectId={projectId!} />
-  ) : (
+  // Auto-open Mission Control only while agents are actively working.
+  const showMission = viewMission || isWorking;
+
+  if (showMission && projectId) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setViewMission(false)}
+          className="text-xs font-mono uppercase tracking-[0.18em] text-slate-500 hover:text-primary"
+        >
+          ← Back to dashboard
+        </button>
+        <MissionControl projectId={projectId} />
+      </div>
+    );
+  }
+
+  return (
     <IdleDashboard
       resumeMission={hasPending ? (project.data?.project?.mission ?? null) : null}
-      onResume={hasPending && projectId ? () => {
-        const el = document.getElementById("resume-mission-anchor");
-        void el;
-      } : undefined}
+      onResume={hasPending ? () => setViewMission(true) : undefined}
     />
   );
 }
@@ -86,6 +98,7 @@ function DashboardHome() {
 
 function IdleDashboard({
   resumeMission,
+  onResume,
 }: {
   resumeMission?: string | null;
   onResume?: () => void;
@@ -149,6 +162,14 @@ function IdleDashboard({
             <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">// Pending mission</span>
             <span className="ml-3 text-slate-800">"{resumeMission}" — deliverables awaiting review.</span>
           </div>
+          {onResume && (
+            <button
+              onClick={onResume}
+              className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:-translate-y-0.5 transition-all"
+            >
+              View mission →
+            </button>
+          )}
         </div>
       )}
       <section className="glass-panel p-10 md:p-14 text-center animate-rise-in">
