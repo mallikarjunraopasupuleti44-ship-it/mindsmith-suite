@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { UserCircle2, Building2, ShieldAlert, Mail, KeyRound, Trash2 } from "lucide-react";
+import { UserCircle2, Building2, ShieldAlert, Mail, KeyRound, Trash2, Sparkles } from "lucide-react";
+import { useAuraMode } from "@/lib/aura-mode";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateProfile } from "@/lib/profile.functions";
 import { requestEmailChange, deleteAccount } from "@/lib/account.functions";
@@ -42,10 +43,55 @@ function SettingsPage() {
         </p>
       </div>
 
+      <AppearanceSection />
       <BusinessSection profile={data?.profile} onSaved={() => qc.invalidateQueries({ queryKey: ["my-profile"] })} />
       <AccountSection email={data?.email ?? null} />
       <DangerZone username={data?.profile?.username ?? ""} />
     </div>
+  );
+}
+
+function AppearanceSection() {
+  const [enabled, setEnabled] = useAuraMode();
+  return (
+    <section className="glass-panel p-6 space-y-5">
+      <div className="flex items-center gap-3">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h2 className="font-display text-xl font-bold">Appearance</h2>
+      </div>
+      <p className="text-xs text-slate-500 -mt-2">
+        Toggle premium visual layers. Your preference is saved to this device.
+      </p>
+
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/60 bg-white/40 p-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-base font-semibold">✨ Aura Mode</span>
+            <span className="text-[10px] uppercase tracking-widest text-primary font-mono px-2 py-0.5 rounded-full bg-primary/10">
+              Premium
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            Deep midnight theme with aurora, floating particles, cursor glow and glassmorphism across the entire app.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          onClick={() => setEnabled(!enabled)}
+          className={`aura-switch relative shrink-0 inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 ${
+            enabled ? "aura-switch-on" : "bg-slate-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform duration-300 ${
+              enabled ? "translate-x-7" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+    </section>
   );
 }
 
