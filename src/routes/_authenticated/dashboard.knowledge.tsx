@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Upload, FileText, Trash2, RefreshCw, Search, Paperclip, X } from "lucide-react";
+import { Upload, FileText, Trash2, RefreshCw, Search, Paperclip, X, Pencil, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listDocuments, ingestDocument, deleteDocument, reprocessDocument, getDocument,
+  listDocuments, ingestDocument, deleteDocument, reprocessDocument, getDocument, updateDocument,
 } from "@/lib/knowledge.functions";
 import { CATEGORIES, type Category } from "@/lib/knowledge.server";
 
