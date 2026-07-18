@@ -129,7 +129,7 @@ function AuthPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-10">
       <div className="glass-modal w-full max-w-md p-8 animate-rise-in">
         <Link to="/" className="flex items-center gap-2.5 mb-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl text-white font-bold" style={{ background: "linear-gradient(135deg, #5B4FE9, #8B5CF6)" }}>A</div>
+          <AtomLogo size={36} />
           <div className="font-display text-lg font-bold tracking-tight">Aura AI</div>
         </Link>
 
