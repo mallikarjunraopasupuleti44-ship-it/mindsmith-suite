@@ -512,3 +512,28 @@ function ScheduleDialog({ post, onClose, onSave, saving }: { post: any; onClose:
     </div>
   );
 }
+
+function VideoUploadButton({ onFile, busy, disabled }: { onFile: (file: File) => void; busy: boolean; disabled: boolean }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={ref}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
+      />
+      <button
+        onClick={() => ref.current?.click()}
+        disabled={disabled}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-foreground disabled:opacity-50">
+        <Upload className={`h-3 w-3 ${busy ? "animate-pulse" : ""}`} /> {busy ? "Uploading…" : "Attach video"}
+      </button>
+    </>
+  );
+}
