@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Instagram, Youtube, Twitter, Zap, Calendar, Sparkles, Pencil, Trash2, RefreshCw, Plus, Info } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Instagram, Youtube, Twitter, Zap, Calendar, Sparkles, Pencil, Trash2, RefreshCw, Plus, Info, Upload, Rocket, CheckCircle2, XCircle, Link as LinkIcon, Wand2 } from "lucide-react";
 import {
   listChannels, toggleChannel, listPosts, listProjectsWithMarketing,
   generatePostsFromMarketing, updatePost, deletePost, schedulePost, regeneratePost, createBlankPost,
 } from "@/lib/automation.functions";
+import {
+  getYoutubeAuthUrl, getYoutubeStatus, disconnectYoutube,
+  attachPostMedia, publishPostNow, generateYoutubeMetadata,
+} from "@/lib/youtube.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/dashboard/automation")({
   component: AutomationPage,
@@ -43,15 +48,43 @@ function AutomationPage() {
   const scheduleFn = useServerFn(schedulePost);
   const regenFn = useServerFn(regeneratePost);
   const createBlankFn = useServerFn(createBlankPost);
+  const ytAuthUrlFn = useServerFn(getYoutubeAuthUrl);
+  const ytStatusFn = useServerFn(getYoutubeStatus);
+  const ytDisconnectFn = useServerFn(disconnectYoutube);
+  const attachMediaFn = useServerFn(attachPostMedia);
+  const publishNowFn = useServerFn(publishPostNow);
+  const generateYtMetaFn = useServerFn(generateYoutubeMetadata);
 
   const channels = useQuery({ queryKey: ["automation-channels"], queryFn: () => channelsFn() });
   const posts = useQuery({ queryKey: ["automation-posts"], queryFn: () => postsFn() });
   const projects = useQuery({ queryKey: ["automation-projects"], queryFn: () => projectsFn() });
+  const ytStatus = useQuery({ queryKey: ["youtube-status"], queryFn: () => ytStatusFn() });
 
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [editing, setEditing] = useState<any | null>(null);
   const [scheduling, setScheduling] = useState<any | null>(null);
   const [regenInstr, setRegenInstr] = useState<Record<string, string>>({});
+  const [banner, setBanner] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [uploadingPost, setUploadingPost] = useState<string | null>(null);
+  const [publishingPost, setPublishingPost] = useState<string | null>(null);
+
+  // Handle OAuth callback query params.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const yt = url.searchParams.get("youtube");
+    if (yt === "connected") {
+      setBanner({ kind: "success", text: "YouTube connected." });
+      qc.invalidateQueries({ queryKey: ["youtube-status"] });
+      qc.invalidateQueries({ queryKey: ["automation-channels"] });
+    } else if (yt === "error") {
+      setBanner({ kind: "error", text: `YouTube connection failed: ${url.searchParams.get("reason") ?? "unknown"}` });
+    }
+    if (yt) {
+      url.searchParams.delete("youtube");
+      url.searchParams.delete("reason");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [qc]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["automation-posts"] });
@@ -92,36 +125,132 @@ function AutomationPage() {
     onSuccess: invalidate,
   });
 
+  const connectYoutube = async () => {
+    try {
+      const { url } = await ytAuthUrlFn({ data: { origin: window.location.origin } });
+      window.location.href = url;
+    } catch (e: any) {
+      setBanner({ kind: "error", text: e.message ?? "Could not start Google auth" });
+    }
+  };
+
+  const disconnectYt = useMutation({
+    mutationFn: async () => ytDisconnectFn(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["youtube-status"] });
+      qc.invalidateQueries({ queryKey: ["automation-channels"] });
+      setBanner({ kind: "success", text: "YouTube disconnected." });
+    },
+  });
+
+  const uploadVideo = async (postId: string, file: File) => {
+    setUploadingPost(postId);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const ext = file.name.split(".").pop() || "mp4";
+      const path = `${user.id}/${postId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, {
+        contentType: file.type || "video/mp4", upsert: true,
+      });
+      if (upErr) throw new Error(upErr.message);
+      await attachMediaFn({ data: { postId, mediaPath: path, mediaType: file.type || "video/mp4" } });
+      invalidate();
+      setBanner({ kind: "success", text: "Video attached." });
+    } catch (e: any) {
+      setBanner({ kind: "error", text: e.message ?? "Upload failed" });
+    } finally {
+      setUploadingPost(null);
+    }
+  };
+
+  const publishNow = async (postId: string) => {
+    setPublishingPost(postId);
+    try {
+      const res = await publishNowFn({ data: { postId } });
+      invalidate();
+      setBanner({ kind: "success", text: `Published to YouTube: ${(res as any).url}` });
+    } catch (e: any) {
+      setBanner({ kind: "error", text: e.message ?? "Publish failed" });
+      invalidate();
+    } finally {
+      setPublishingPost(null);
+    }
+  };
+
+  const generateYtMeta = async (postId: string, projectId: string) => {
+    const post = (posts.data ?? []).find((p: any) => p.id === postId);
+    const topic = window.prompt("What is the video about?", post?.title ?? "");
+    if (!topic) return;
+    try {
+      const meta = await generateYtMetaFn({ data: { topic, projectId } });
+      await updateFn({ data: { postId, title: meta.title, body: meta.body, hashtags: meta.hashtags } });
+      invalidate();
+      setBanner({ kind: "success", text: "AI generated title, description, and hashtags." });
+    } catch (e: any) {
+      setBanner({ kind: "error", text: e.message ?? "Generation failed" });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-primary font-mono">// Automation</div>
         <h1 className="mt-2 font-display text-2xl sm:text-3xl font-bold tracking-tight break-words">Channels & scheduled posts</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Import drafts from your marketing agent, edit them, and schedule when they should go live.
+          Connect YouTube to auto-publish scheduled videos. Instagram & X are draft-only for now.
         </p>
       </div>
+
+      {banner && (
+        <div className={`glass-panel p-4 flex items-start gap-3 text-sm ${banner.kind === "success" ? "text-emerald-700" : "text-rose-700"}`}>
+          {banner.kind === "success" ? <CheckCircle2 className="h-4 w-4 mt-0.5" /> : <XCircle className="h-4 w-4 mt-0.5" />}
+          <div className="flex-1 break-all">{banner.text}</div>
+          <button onClick={() => setBanner(null)} className="text-xs text-slate-500 hover:text-slate-700">Dismiss</button>
+        </div>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-3">
         {(channels.data ?? []).map((c: any) => {
           const meta = PLATFORM_META[c.platform];
           const Icon = meta.icon;
+          const isYt = c.platform === "youtube";
+          const ytConnected = isYt && ytStatus.data?.connected;
           return (
             <div key={c.platform} className="glass p-5">
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${meta.hue} text-white`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="mt-3 font-display font-semibold">{meta.label}</div>
-              <div className="mt-1 text-xs text-slate-500">
-                {c.connected ? "Marked connected" : "Not connected"}
+              <div className="mt-1 text-xs text-slate-500 break-words">
+                {isYt
+                  ? (ytConnected ? `Connected as ${ytStatus.data?.channelTitle ?? "channel"}` : "Not connected — auto-publish disabled")
+                  : (c.connected ? "Marked connected (draft-only)" : "Not connected")}
               </div>
-              <button
-                onClick={() => toggle.mutate({ platform: c.platform, connected: !c.connected })}
-                className={`mt-4 w-full rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                  c.connected ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-primary text-primary-foreground hover:-translate-y-0.5"
-                }`}>
-                {c.connected ? "Mark disconnected" : "Mark connected"}
-              </button>
+              {isYt ? (
+                ytConnected ? (
+                  <button
+                    onClick={() => { if (confirm("Disconnect YouTube?")) disconnectYt.mutate(); }}
+                    disabled={disconnectYt.isPending}
+                    className="mt-4 w-full rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300 px-4 py-2 text-xs font-semibold transition disabled:opacity-50">
+                    {disconnectYt.isPending ? "Disconnecting…" : "Disconnect"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={connectYoutube}
+                    className="mt-4 w-full rounded-xl bg-primary text-primary-foreground hover:-translate-y-0.5 px-4 py-2 text-xs font-semibold transition inline-flex items-center justify-center gap-1">
+                    <LinkIcon className="h-3 w-3" /> Connect with Google
+                  </button>
+                )
+              ) : (
+                <button
+                  onClick={() => toggle.mutate({ platform: c.platform, connected: !c.connected })}
+                  className={`mt-4 w-full rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                    c.connected ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-primary text-primary-foreground hover:-translate-y-0.5"
+                  }`}>
+                  {c.connected ? "Mark disconnected" : "Mark connected"}
+                </button>
+              )}
             </div>
           );
         })}
@@ -130,9 +259,10 @@ function AutomationPage() {
       <div className="glass-panel p-4 flex items-start gap-3 text-xs text-slate-600">
         <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
         <p>
-          Live posting to Instagram/YouTube/X needs each platform's OAuth app and review. That's a separate setup step — for now scheduled posts auto-flip to "published" here at their scheduled time so you can test the full flow.
+          YouTube: attach a video to a post, then schedule or hit "Publish now" — the cron job runs every 5 min and pushes due videos live via the YouTube Data API. Instagram/X publishing requires a Meta app + review; those platforms stay draft-only for now.
         </p>
       </div>
+
 
       <section className="glass-panel p-5">
         <div className="flex items-center gap-2 mb-3">
@@ -212,13 +342,18 @@ function AutomationPage() {
                           ))}
                         </div>
                       ) : null}
-                      <div className="mt-3 text-xs text-slate-400">
+                      <div className="mt-3 text-xs text-slate-400 break-words">
                         {p.projects?.title ?? p.projects?.mission ? `${p.projects.title ?? p.projects.mission} · ` : ""}
                         {p.status === "published" && p.published_at
                           ? `published ${new Date(p.published_at).toLocaleString()}`
                           : p.scheduled_at
                             ? `scheduled ${new Date(p.scheduled_at).toLocaleString()}`
                             : "unscheduled"}
+                        {p.external_url && (
+                          <> · <a href={p.external_url} target="_blank" rel="noopener" className="text-primary hover:underline">view on YouTube</a></>
+                        )}
+                        {p.media_url && <> · <span className="text-emerald-600">video attached</span></>}
+                        {p.error && <div className="text-rose-600 mt-1">Error: {p.error}</div>}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button onClick={() => setEditing(p)} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-foreground">
@@ -233,6 +368,28 @@ function AutomationPage() {
                           className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:opacity-80 disabled:opacity-50">
                           <RefreshCw className={`h-3 w-3 ${regen.isPending && (regen.variables as any)?.postId === p.id ? "animate-spin" : ""}`} /> Regenerate
                         </button>
+                        {p.platform === "youtube" && (
+                          <>
+                            <VideoUploadButton
+                              disabled={uploadingPost === p.id}
+                              busy={uploadingPost === p.id}
+                              onFile={(f) => uploadVideo(p.id, f)}
+                            />
+                            <button
+                              onClick={() => generateYtMeta(p.id, p.project_id)}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:opacity-80">
+                              <Wand2 className="h-3 w-3" /> AI metadata
+                            </button>
+                            <button
+                              onClick={() => publishNow(p.id)}
+                              disabled={publishingPost === p.id || !p.media_url || !ytStatus.data?.connected}
+                              title={!ytStatus.data?.connected ? "Connect YouTube first" : !p.media_url ? "Attach a video first" : ""}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:opacity-80 disabled:opacity-40">
+                              <Rocket className={`h-3 w-3 ${publishingPost === p.id ? "animate-pulse" : ""}`} />
+                              {publishingPost === p.id ? "Publishing…" : "Publish now"}
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => { if (confirm("Delete this post?")) remove.mutate(p.id); }}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:opacity-80">
@@ -353,5 +510,30 @@ function ScheduleDialog({ post, onClose, onSave, saving }: { post: any; onClose:
         </div>
       </div>
     </div>
+  );
+}
+
+function VideoUploadButton({ onFile, busy, disabled }: { onFile: (file: File) => void; busy: boolean; disabled: boolean }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={ref}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
+      />
+      <button
+        onClick={() => ref.current?.click()}
+        disabled={disabled}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-foreground disabled:opacity-50">
+        <Upload className={`h-3 w-3 ${busy ? "animate-pulse" : ""}`} /> {busy ? "Uploading…" : "Attach video"}
+      </button>
+    </>
   );
 }
