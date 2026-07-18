@@ -1,8 +1,96 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Sparkles, X, Minus, Send, Loader2 } from "lucide-react";
+import { Sparkles, X, Minus, Send, Loader2, GripHorizontal } from "lucide-react";
 import { chatWithAssistant } from "@/lib/assistant.functions";
 import { AtomLogo } from "./AtomLogo";
+
+const LAUNCHER_SIZE = 64;
+const PANEL_WIDTH = 384;
+const PANEL_HEIGHT = 520;
+const MOBILE_PANEL_WIDTH = 320;
+const MOBILE_PANEL_HEIGHT = 384;
+
+function useDraggablePosition(open: boolean, minimized: boolean) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragInfo = useRef({ isDragging: false, startX: 0, startY: 0, didDrag: false });
+
+  const getBounds = useCallback((isOpen: boolean) => {
+    if (typeof window === "undefined") return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    const isMobile = window.innerWidth < 640;
+    const width = isOpen ? (isMobile ? MOBILE_PANEL_WIDTH : PANEL_WIDTH) : LAUNCHER_SIZE;
+    const height = isOpen ? (isMobile ? MOBILE_PANEL_HEIGHT : PANEL_HEIGHT) : LAUNCHER_SIZE;
+    const pad = 20;
+    return {
+      minX: width + pad - window.innerWidth,
+      maxX: pad,
+      minY: height + pad - window.innerHeight,
+      maxY: pad,
+    };
+  }, []);
+
+  const clamp = useCallback(
+    (x: number, y: number, isOpen: boolean) => {
+      const bounds = getBounds(isOpen);
+      return {
+        x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
+        y: Math.max(bounds.minY, Math.min(bounds.maxY, y)),
+      };
+    },
+    [getBounds],
+  );
+
+  useEffect(() => {
+    const isOpen = open && !minimized;
+    setPosition((prev) => clamp(prev.x, prev.y, isOpen));
+  }, [open, minimized, clamp]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isOpen = open && !minimized;
+      setPosition((prev) => clamp(prev.x, prev.y, isOpen));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [open, minimized, clamp]);
+
+  const startDrag = useCallback((e: React.PointerEvent) => {
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    dragInfo.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      didDrag: false,
+    };
+    setIsDragging(true);
+  }, []);
+
+  const onDrag = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragInfo.current.isDragging) return;
+      const dx = e.clientX - dragInfo.current.startX;
+      const dy = e.clientY - dragInfo.current.startY;
+      if (Math.sqrt(dx * dx + dy * dy) > 4) {
+        dragInfo.current.didDrag = true;
+      }
+      const isOpen = open && !minimized;
+      setPosition((prev) => clamp(prev.x + e.movementX, prev.y + e.movementY, isOpen));
+    },
+    [open, minimized, clamp],
+  );
+
+  const endDrag = useCallback((e: React.PointerEvent) => {
+    const target = e.currentTarget;
+    if (target.hasPointerCapture(e.pointerId)) {
+      target.releasePointerCapture(e.pointerId);
+    }
+    dragInfo.current.isDragging = false;
+    setIsDragging(false);
+  }, []);
+
+  return { position, isDragging, dragInfo, startDrag, onDrag, endDrag };
+}
 
 type Msg = { role: "user" | "assistant"; content: string; ts: number };
 
