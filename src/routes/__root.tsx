@@ -15,6 +15,7 @@ import { supabase } from "../integrations/supabase/client";
 import { BackgroundOrbs } from "../components/BackgroundOrbs";
 import { CursorGlow } from "../components/CursorGlow";
 import { AuraAssistant } from "../components/AuraAssistant";
+import { AuraModeToggle } from "../components/AuraModeToggle";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +136,7 @@ function RootComponent() {
         <Outlet />
       </div>
       <AuraAssistant />
+      <AuraModeToggle />
     </QueryClientProvider>
   );
 }
