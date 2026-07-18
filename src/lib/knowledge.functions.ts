@@ -110,7 +110,7 @@ export const updateDocument = createServerFn({ method: "POST" })
     if (fetchErr) throw new Error(fetchErr.message);
     if (!existing) throw new Error("Document not found");
 
-    const patch: Record<string, unknown> = {};
+    const patch: { file_name?: string; category?: (typeof CATEGORIES)[number]; extracted_text?: string; status?: string; status_error?: string | null } = {};
     if (data.fileName !== undefined) patch.file_name = data.fileName;
     if (data.category !== undefined) patch.category = data.category;
 
