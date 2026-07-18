@@ -21,6 +21,26 @@ function safeRedirect(target?: string): string {
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,24}$/;
 
+function checkPasswordStrength(pw: string): { ok: boolean; message: string; score: number; label: string } {
+  const checks = {
+    length: pw.length >= 8,
+    lower: /[a-z]/.test(pw),
+    upper: /[A-Z]/.test(pw),
+    digit: /\d/.test(pw),
+    symbol: /[^A-Za-z0-9]/.test(pw),
+  };
+  const score = Object.values(checks).filter(Boolean).length;
+  const label = score <= 2 ? "Weak" : score === 3 ? "Fair" : score === 4 ? "Good" : "Strong";
+  const missing: string[] = [];
+  if (!checks.length) missing.push("at least 8 characters");
+  if (!checks.lower) missing.push("a lowercase letter");
+  if (!checks.upper) missing.push("an uppercase letter");
+  if (!checks.digit) missing.push("a number");
+  if (!checks.symbol) missing.push("a symbol");
+  const ok = missing.length === 0;
+  return { ok, message: ok ? "" : `Password must include ${missing.join(", ")}.`, score, label };
+}
+
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
