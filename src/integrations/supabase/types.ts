@@ -140,27 +140,51 @@ export type Database = {
       }
       automation_channels: {
         Row: {
+          access_token: string | null
           connected: boolean
           created_at: string
           external_account_id: string | null
           id: string
+          metadata: Json | null
           platform: string
+          provider_account_id: string | null
+          provider_username: string | null
+          refresh_token: string | null
+          scopes: string[] | null
+          token_expires_at: string | null
+          updated_at: string
           user_id: string
         }
         Insert: {
+          access_token?: string | null
           connected?: boolean
           created_at?: string
           external_account_id?: string | null
           id?: string
+          metadata?: Json | null
           platform: string
+          provider_account_id?: string | null
+          provider_username?: string | null
+          refresh_token?: string | null
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string
           user_id: string
         }
         Update: {
+          access_token?: string | null
           connected?: boolean
           created_at?: string
           external_account_id?: string | null
           id?: string
+          metadata?: Json | null
           platform?: string
+          provider_account_id?: string | null
+          provider_username?: string | null
+          refresh_token?: string | null
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -372,8 +396,13 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          error: string | null
+          external_post_id: string | null
+          external_url: string | null
           hashtags: string[] | null
           id: string
+          media_type: string | null
+          media_url: string | null
           platform: string | null
           project_id: string
           published_at: string | null
@@ -381,12 +410,18 @@ export type Database = {
           status: string
           title: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           body?: string | null
           created_at?: string
+          error?: string | null
+          external_post_id?: string | null
+          external_url?: string | null
           hashtags?: string[] | null
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           platform?: string | null
           project_id: string
           published_at?: string | null
@@ -394,12 +429,18 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           body?: string | null
           created_at?: string
+          error?: string | null
+          external_post_id?: string | null
+          external_url?: string | null
           hashtags?: string[] | null
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           platform?: string | null
           project_id?: string
           published_at?: string | null
@@ -407,6 +448,7 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -486,7 +528,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      automation_channels_public: {
+        Row: {
+          connected: boolean | null
+          created_at: string | null
+          id: string | null
+          metadata: Json | null
+          platform: string | null
+          provider_account_id: string | null
+          provider_username: string | null
+          scopes: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connected?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          platform?: string | null
+          provider_account_id?: string | null
+          provider_username?: string | null
+          scopes?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connected?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          platform?: string | null
+          provider_account_id?: string | null
+          provider_username?: string | null
+          scopes?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       keyword_match_document_chunks: {
