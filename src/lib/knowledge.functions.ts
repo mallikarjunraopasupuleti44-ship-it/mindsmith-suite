@@ -89,6 +89,82 @@ export const reprocessDocument = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        documentId: z.string().uuid(),
+        fileName: z.string().trim().min(1).max(200).optional(),
+        category: CategorySchema.optional(),
+        extractedText: z.string().max(200_000).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: existing, error: fetchErr } = await context.supabase
+      .from("knowledge_documents")
+      .select("id, extracted_text")
+      .eq("id", data.documentId)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message);
+    if (!existing) throw new Error("Document not found");
+
+    const patch: Record<string, unknown> = {};
+    if (data.fileName !== undefined) patch.file_name = data.fileName;
+    if (data.category !== undefined) patch.category = data.category;
+
+    const textChanged =
+      data.extractedText !== undefined && data.extractedText !== existing.extracted_text;
+
+    if (textChanged) {
+      patch.extracted_text = data.extractedText!.slice(0, 20000);
+      patch.status = "processing";
+      patch.status_error = null;
+    }
+
+    if (Object.keys(patch).length > 0) {
+      const { error: upErr } = await context.supabase
+        .from("knowledge_documents")
+        .update(patch)
+        .eq("id", data.documentId);
+      if (upErr) throw new Error(upErr.message);
+    }
+
+    if (textChanged) {
+      // Re-index chunks + embeddings from the edited text
+      const { chunkText } = await import("./knowledge.server");
+      const { embedText } = await import("./ai-gateway.server");
+      await context.supabase.from("document_chunks").delete().eq("document_id", data.documentId);
+      try {
+        const chunks = chunkText(data.extractedText!);
+        const rows: any[] = [];
+        for (let i = 0; i < chunks.length; i++) {
+          const emb = await embedText(chunks[i]);
+          rows.push({
+            document_id: data.documentId,
+            chunk_index: i,
+            chunk_text: chunks[i],
+            embedding: emb as any,
+          });
+        }
+        if (rows.length) await context.supabase.from("document_chunks").insert(rows);
+        await context.supabase
+          .from("knowledge_documents")
+          .update({ status: "indexed", status_error: null })
+          .eq("id", data.documentId);
+      } catch (err) {
+        await context.supabase
+          .from("knowledge_documents")
+          .update({ status: "failed", status_error: (err as Error).message.slice(0, 500) })
+          .eq("id", data.documentId);
+        throw err;
+      }
+    }
+
+    return { ok: true };
+  });
+
 export const deleteDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ documentId: z.string().uuid() }).parse(d))
