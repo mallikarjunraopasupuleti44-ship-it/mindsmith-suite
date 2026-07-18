@@ -281,11 +281,30 @@ function formatSize(n: number) {
 }
 
 function DocumentDrawer({ id, onClose }: { id: string; onClose: () => void }) {
+  const qc = useQueryClient();
   const getFn = useServerFn(getDocument);
+  const updateFn = useServerFn(updateDocument);
   const q = useQuery({
     queryKey: ["knowledge-doc", id],
     queryFn: () => getFn({ data: { documentId: id } }),
   });
+
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [cat, setCat] = useState<Category>("other");
+  const [text, setText] = useState("");
+
+  const doc = q.data?.document;
+  const isImage = doc?.file_type?.startsWith("image/");
+  const isPdf = doc?.file_type === "application/pdf";
+
+  useEffect(() => {
+    if (doc && !editing) {
+      setName(doc.file_name ?? "");
+      setCat((doc.category as Category) ?? "other");
+      setText(doc.extracted_text ?? "");
+    }
+  }, [doc, editing]);
 
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -293,26 +312,76 @@ function DocumentDrawer({ id, onClose }: { id: string; onClose: () => void }) {
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
 
-  const doc = q.data?.document;
-  const isImage = doc?.file_type?.startsWith("image/");
-  const isPdf = doc?.file_type === "application/pdf";
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!doc) return;
+      const payload: {
+        documentId: string;
+        fileName?: string;
+        category?: Category;
+        extractedText?: string;
+      } = { documentId: doc.id };
+      if (name.trim() && name !== doc.file_name) payload.fileName = name.trim();
+      if (cat !== doc.category) payload.category = cat;
+      if (text !== (doc.extracted_text ?? "")) payload.extractedText = text;
+      await updateFn({ data: payload });
+    },
+    onSuccess: () => {
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["knowledge-doc", id] });
+      qc.invalidateQueries({ queryKey: ["knowledge-docs"] });
+    },
+  });
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end" style={{ background: "rgba(15,23,42,0.35)", backdropFilter: "blur(8px)" }} onClick={onClose}>
       <div className="glass-modal my-4 mr-4 w-full max-w-2xl p-6 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">// Document</div>
-            <h2 className="mt-1 font-display text-xl font-bold truncate">{doc?.file_name ?? "Loading…"}</h2>
+            {editing ? (
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={200}
+                className="mt-1 w-full rounded-xl border border-input bg-white/70 px-3 py-2 font-display text-lg font-semibold"
+              />
+            ) : (
+              <h2 className="mt-1 font-display text-xl font-bold truncate">{doc?.file_name ?? "Loading…"}</h2>
+            )}
           </div>
-          <button onClick={onClose} className="rounded-xl p-2 hover:bg-white/70"><X className="h-4 w-4" /></button>
+          <div className="flex items-center gap-1">
+            {doc && !editing && (
+              <button onClick={() => setEditing(true)} className="rounded-xl p-2 text-slate-500 hover:bg-white/70" title="Edit">
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={onClose} className="rounded-xl p-2 hover:bg-white/70"><X className="h-4 w-4" /></button>
+          </div>
         </div>
 
         {q.isLoading && <div className="mt-8 text-sm text-muted-foreground">Loading…</div>}
 
         {doc && (
           <>
-            {q.data?.signedUrl && (
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <span className="text-slate-500">Category:</span>
+              {editing ? (
+                <select
+                  value={cat}
+                  onChange={(e) => setCat(e.target.value as Category)}
+                  className="rounded-xl border border-input bg-white/70 px-3 py-1.5 text-sm"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                  ))}
+                </select>
+              ) : (
+                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium">{CATEGORY_LABELS[doc.category as Category]}</span>
+              )}
+            </div>
+
+            {q.data?.signedUrl && !editing && (
               <div className="mt-5">
                 {isImage && (
                   <img src={q.data.signedUrl} alt={doc.file_name} className="rounded-2xl border border-slate-200/60 max-h-96 w-auto mx-auto" />
@@ -326,32 +395,73 @@ function DocumentDrawer({ id, onClose }: { id: string; onClose: () => void }) {
               </div>
             )}
 
-            {doc.extracted_text && (
-              <div className="mt-6">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono mb-2">// Extracted text (preview)</div>
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
+                  // {editing ? "Business content (agents read this)" : "Extracted text (preview)"}
+                </div>
+                {editing && (
+                  <span className="text-[10px] text-slate-500">{text.length.toLocaleString()} / 200,000</span>
+                )}
+              </div>
+              {editing ? (
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value.slice(0, 200_000))}
+                  rows={16}
+                  placeholder="Add or edit the business information your AI team should reference…"
+                  className="w-full rounded-2xl border border-slate-200/60 bg-white/70 p-4 font-mono text-xs text-slate-700"
+                />
+              ) : doc.extracted_text ? (
                 <pre className="whitespace-pre-wrap text-xs bg-white/60 border border-slate-200/60 rounded-2xl p-4 max-h-72 overflow-y-auto font-mono text-slate-700">
                   {doc.extracted_text.slice(0, 4000)}
                   {doc.extracted_text.length > 4000 && "\n\n…"}
                 </pre>
+              ) : (
+                <div className="text-sm text-slate-500 italic">No text extracted yet. Click Edit to add content manually.</div>
+              )}
+            </div>
+
+            {editing && (
+              <div className="mt-5 flex items-center justify-end gap-2">
+                {save.isError && (
+                  <div className="mr-auto text-xs text-red-600">{(save.error as Error).message}</div>
+                )}
+                <button
+                  onClick={() => { setEditing(false); }}
+                  className="rounded-2xl border border-slate-200/60 bg-white/60 px-4 py-2 text-sm font-medium hover:bg-white/90"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => save.mutate()}
+                  disabled={save.isPending}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-md hover:opacity-90 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
+                  {save.isPending ? "Saving & re-indexing…" : "Save changes"}
+                </button>
               </div>
             )}
 
-            <div className="mt-6">
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono mb-2">// Used in</div>
-              {(q.data?.sources ?? []).length === 0 ? (
-                <div className="text-sm text-slate-500">Not referenced by any deliverable yet.</div>
-              ) : (
-                <ul className="space-y-1.5">
-                  {(q.data?.sources ?? []).map((s: any) => (
-                    <li key={s.agent_task_id} className="flex items-center gap-2 text-sm">
-                      <Paperclip className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-medium">{s.agent_tasks?.agent_id}</span>
-                      <span className="text-slate-500">— {s.agent_tasks?.deliverable_title ?? "Deliverable"}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            {!editing && (
+              <div className="mt-6">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono mb-2">// Used in</div>
+                {(q.data?.sources ?? []).length === 0 ? (
+                  <div className="text-sm text-slate-500">Not referenced by any deliverable yet.</div>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {(q.data?.sources ?? []).map((s: any) => (
+                      <li key={s.agent_task_id} className="flex items-center gap-2 text-sm">
+                        <Paperclip className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-medium">{s.agent_tasks?.agent_id}</span>
+                        <span className="text-slate-500">— {s.agent_tasks?.deliverable_title ?? "Deliverable"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
