@@ -139,7 +139,7 @@ export function AuraAssistant() {
 
       {/* Panel */}
       {open && !minimized && (
-        <div className="fixed z-[60] bottom-[20px] right-[20px] sm:bottom-[30px] sm:right-[30px] left-[20px] sm:left-auto aura-panel flex flex-col overflow-hidden">
+        <div className="fixed z-[60] bottom-[20px] right-[20px] sm:bottom-[30px] sm:right-[30px] aura-panel flex flex-col overflow-hidden">
           {/* Header */}
           <div className="aura-header flex items-center gap-3 px-4 py-3">
             <div className="h-9 w-9 rounded-xl bg-white/40 backdrop-blur flex items-center justify-center shadow-inner">
