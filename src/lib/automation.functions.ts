@@ -97,6 +97,7 @@ export const generatePostsFromMarketing = createServerFn({ method: "POST" })
     const platforms: Platform[] = ["instagram", "twitter", "youtube"];
     const rows = posts.map((p, i) => ({
       project_id: data.projectId,
+      user_id: context.userId,
       title: p.headline ?? `Post ${i + 1}`,
       body: p.body ?? "",
       hashtags: Array.isArray(p.tags) ? p.tags.slice(0, 15) : [],
@@ -231,7 +232,7 @@ export const createBlankPost = createServerFn({ method: "POST" })
     await assertProjectOwnership(context.supabase, context.userId, data.projectId);
     const { data: row, error } = await context.supabase
       .from("posts")
-      .insert({ project_id: data.projectId, platform: data.platform, title: "New post", body: "", hashtags: [], status: "draft" })
+      .insert({ project_id: data.projectId, user_id: context.userId, platform: data.platform, title: "New post", body: "", hashtags: [], status: "draft" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
