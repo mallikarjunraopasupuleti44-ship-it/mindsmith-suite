@@ -175,13 +175,28 @@ function AuthPage() {
           <input
             type="password"
             required
-            minLength={6}
+            minLength={mode === "signup" ? 8 : 6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
+          {mode === "signup" && password.length > 0 && (() => {
+            const s = checkPasswordStrength(password);
+            const color = s.score <= 2 ? "bg-rose-500" : s.score === 3 ? "bg-amber-500" : s.score === 4 ? "bg-lime-500" : "bg-emerald-500";
+            const text = s.score <= 2 ? "text-rose-600" : s.score === 3 ? "text-amber-600" : s.score === 4 ? "text-lime-600" : "text-emerald-600";
+            return (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className={`h-1 flex-1 rounded-full ${i <= s.score ? color : "bg-slate-200"}`} />
+                  ))}
+                </div>
+                <div className={`text-xs ${text}`}>{s.label}{!s.ok && ` — needs ${s.message.replace("Password must include ", "").replace(/\.$/, "")}`}</div>
+              </div>
+            );
+          })()}
           {mode === "signup" && (
             <input
               type="password"
