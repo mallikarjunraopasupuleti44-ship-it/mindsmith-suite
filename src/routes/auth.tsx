@@ -21,6 +21,26 @@ function safeRedirect(target?: string): string {
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,24}$/;
 
+function checkPasswordStrength(pw: string): { ok: boolean; message: string; score: number; label: string } {
+  const checks = {
+    length: pw.length >= 8,
+    lower: /[a-z]/.test(pw),
+    upper: /[A-Z]/.test(pw),
+    digit: /\d/.test(pw),
+    symbol: /[^A-Za-z0-9]/.test(pw),
+  };
+  const score = Object.values(checks).filter(Boolean).length;
+  const label = score <= 2 ? "Weak" : score === 3 ? "Fair" : score === 4 ? "Good" : "Strong";
+  const missing: string[] = [];
+  if (!checks.length) missing.push("at least 8 characters");
+  if (!checks.lower) missing.push("a lowercase letter");
+  if (!checks.upper) missing.push("an uppercase letter");
+  if (!checks.digit) missing.push("a number");
+  if (!checks.symbol) missing.push("a symbol");
+  const ok = missing.length === 0;
+  return { ok, message: ok ? "" : `Password must include ${missing.join(", ")}.`, score, label };
+}
+
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
@@ -46,6 +66,11 @@ function AuthPage() {
     if (mode === "signup") {
       if (!USERNAME_RE.test(username)) {
         setError("Username must be 3–24 letters, numbers, or underscores.");
+        return;
+      }
+      const strength = checkPasswordStrength(password);
+      if (!strength.ok) {
+        setError(strength.message);
         return;
       }
       if (password !== confirm) {
@@ -150,13 +175,28 @@ function AuthPage() {
           <input
             type="password"
             required
-            minLength={6}
+            minLength={mode === "signup" ? 8 : 6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             className="w-full rounded-xl border border-input bg-white/60 px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
+          {mode === "signup" && password.length > 0 && (() => {
+            const s = checkPasswordStrength(password);
+            const color = s.score <= 2 ? "bg-rose-500" : s.score === 3 ? "bg-amber-500" : s.score === 4 ? "bg-lime-500" : "bg-emerald-500";
+            const text = s.score <= 2 ? "text-rose-600" : s.score === 3 ? "text-amber-600" : s.score === 4 ? "text-lime-600" : "text-emerald-600";
+            return (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className={`h-1 flex-1 rounded-full ${i <= s.score ? color : "bg-slate-200"}`} />
+                  ))}
+                </div>
+                <div className={`text-xs ${text}`}>{s.label}{!s.ok && ` — needs ${s.message.replace("Password must include ", "").replace(/\.$/, "")}`}</div>
+              </div>
+            );
+          })()}
           {mode === "signup" && (
             <input
               type="password"
