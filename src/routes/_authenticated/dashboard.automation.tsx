@@ -342,13 +342,18 @@ function AutomationPage() {
                           ))}
                         </div>
                       ) : null}
-                      <div className="mt-3 text-xs text-slate-400">
+                      <div className="mt-3 text-xs text-slate-400 break-words">
                         {p.projects?.title ?? p.projects?.mission ? `${p.projects.title ?? p.projects.mission} · ` : ""}
                         {p.status === "published" && p.published_at
                           ? `published ${new Date(p.published_at).toLocaleString()}`
                           : p.scheduled_at
                             ? `scheduled ${new Date(p.scheduled_at).toLocaleString()}`
                             : "unscheduled"}
+                        {p.external_url && (
+                          <> · <a href={p.external_url} target="_blank" rel="noopener" className="text-primary hover:underline">view on YouTube</a></>
+                        )}
+                        {p.media_url && <> · <span className="text-emerald-600">video attached</span></>}
+                        {p.error && <div className="text-rose-600 mt-1">Error: {p.error}</div>}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button onClick={() => setEditing(p)} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-foreground">
@@ -363,6 +368,28 @@ function AutomationPage() {
                           className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:opacity-80 disabled:opacity-50">
                           <RefreshCw className={`h-3 w-3 ${regen.isPending && (regen.variables as any)?.postId === p.id ? "animate-spin" : ""}`} /> Regenerate
                         </button>
+                        {p.platform === "youtube" && (
+                          <>
+                            <VideoUploadButton
+                              disabled={uploadingPost === p.id}
+                              busy={uploadingPost === p.id}
+                              onFile={(f) => uploadVideo(p.id, f)}
+                            />
+                            <button
+                              onClick={() => generateYtMeta(p.id, p.project_id)}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:opacity-80">
+                              <Wand2 className="h-3 w-3" /> AI metadata
+                            </button>
+                            <button
+                              onClick={() => publishNow(p.id)}
+                              disabled={publishingPost === p.id || !p.media_url || !ytStatus.data?.connected}
+                              title={!ytStatus.data?.connected ? "Connect YouTube first" : !p.media_url ? "Attach a video first" : ""}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:opacity-80 disabled:opacity-40">
+                              <Rocket className={`h-3 w-3 ${publishingPost === p.id ? "animate-pulse" : ""}`} />
+                              {publishingPost === p.id ? "Publishing…" : "Publish now"}
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => { if (confirm("Delete this post?")) remove.mutate(p.id); }}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:opacity-80">
