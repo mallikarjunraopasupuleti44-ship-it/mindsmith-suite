@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "../integrations/supabase/client";
 import { BackgroundOrbs } from "../components/BackgroundOrbs";
 import { CursorGlow } from "../components/CursorGlow";
+import { AuraAssistant } from "../components/AuraAssistant";
 
 function NotFoundComponent() {
   return (
@@ -133,6 +134,7 @@ function RootComponent() {
       <div className="relative z-10">
         <Outlet />
       </div>
+      <AuraAssistant />
     </QueryClientProvider>
   );
 }
