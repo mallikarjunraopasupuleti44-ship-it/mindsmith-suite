@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/public/oauth/google/callback")({
               token_expires_at: expiresAt,
               provider_account_id: channel?.id ?? null,
               provider_username: channel?.title ?? null,
-              scopes: tokens.scope ?? null,
+              scopes: tokens.scope ? tokens.scope.split(/\s+/).filter(Boolean) : null,
               updated_at: new Date().toISOString(),
             },
             { onConflict: "user_id,platform" },
