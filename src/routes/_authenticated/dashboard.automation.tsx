@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Instagram, Youtube, Twitter, Zap, Calendar, Sparkles, Pencil, Trash2, RefreshCw, Plus, Info } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Instagram, Youtube, Twitter, Zap, Calendar, Sparkles, Pencil, Trash2, RefreshCw, Plus, Info, Upload, Rocket, CheckCircle2, XCircle, Link as LinkIcon, Wand2 } from "lucide-react";
 import {
   listChannels, toggleChannel, listPosts, listProjectsWithMarketing,
   generatePostsFromMarketing, updatePost, deletePost, schedulePost, regeneratePost, createBlankPost,
 } from "@/lib/automation.functions";
+import {
+  getYoutubeAuthUrl, getYoutubeStatus, disconnectYoutube,
+  attachPostMedia, publishPostNow, generateYoutubeMetadata,
+} from "@/lib/youtube.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/dashboard/automation")({
   component: AutomationPage,
