@@ -68,6 +68,11 @@ function AuthPage() {
         setError("Username must be 3–24 letters, numbers, or underscores.");
         return;
       }
+      const strength = checkPasswordStrength(password);
+      if (!strength.ok) {
+        setError(strength.message);
+        return;
+      }
       if (password !== confirm) {
         setError("Passwords don't match.");
         return;
