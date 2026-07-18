@@ -304,114 +304,276 @@
 }
 
 /* ===========================================================================
-   AURA MODE — global amped-up visual + ambient theme.
-   Activated by toggling `.aura-mode` on <html> via AuraModeToggle.
+   AURA MODE — deep midnight premium theme.
+   Activated by toggling `.aura-mode` on <html> via useAuraMode().
+   Only overrides visuals — never changes layout, spacing, or positioning.
    =========================================================================== */
 
-.aura-mode-toggle {
-  background:
-    radial-gradient(120% 120% at 20% 20%, rgba(255,255,255,0.4), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #1e293b 0%, #4c1d95 100%);
-  border: 1px solid rgba(255,255,255,0.4);
-  box-shadow: 0 10px 30px rgba(30, 41, 59, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
-  backdrop-filter: blur(12px);
-}
-.aura-mode-toggle:hover { transform: translateY(-2px) scale(1.06); filter: brightness(1.1); }
-.aura-mode-toggle[data-active="true"] {
-  background:
-    radial-gradient(120% 120% at 20% 20%, rgba(255,255,255,0.55), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%);
-  box-shadow:
-    0 12px 40px rgba(139, 92, 246, 0.55),
-    0 0 0 6px rgba(139, 92, 246, 0.15),
-    inset 0 1px 0 rgba(255,255,255,0.5);
-  animation: aura-mode-btn-pulse 2.4s ease-in-out infinite;
-}
-@keyframes aura-mode-btn-pulse {
-  0%, 100% { box-shadow: 0 12px 40px rgba(139,92,246,0.55), 0 0 0 6px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.5); }
-  50%      { box-shadow: 0 18px 60px rgba(236,72,153,0.6), 0 0 0 14px rgba(139,92,246,0), inset 0 1px 0 rgba(255,255,255,0.6); }
-}
-
-/* --- Aura Mode: brighter background + aurora sweep --- */
-html.aura-mode body {
-  background:
-    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(139, 92, 246, 0.18), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 85% 20%, rgba(236, 72, 153, 0.18), transparent 55%),
-    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(6, 182, 212, 0.18), transparent 55%),
-    var(--color-background);
-  transition: background 800ms ease;
-}
-
-/* Amp the drifting orbs */
-html.aura-mode .orb-1 { opacity: 0.38 !important; filter: blur(70px) !important; background: #A78BFA !important; }
-html.aura-mode .orb-2 { opacity: 0.34 !important; filter: blur(80px) !important; background: #F472B6 !important; }
-html.aura-mode .orb-3 { opacity: 0.32 !important; filter: blur(75px) !important; background: #67E8F9 !important; }
-
-/* Aurora sweep overlay (pinned above orbs, below content) */
-html.aura-mode body::after {
-  content: "";
-  position: fixed; inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    conic-gradient(from 0deg at 50% 50%,
-      rgba(139,92,246,0.10),
-      rgba(236,72,153,0.10),
-      rgba(6,182,212,0.10),
-      rgba(139,92,246,0.10));
-  mix-blend-mode: screen;
-  animation: aurora-spin 40s linear infinite;
-  opacity: 0.55;
-}
-@keyframes aurora-spin {
-  from { transform: rotate(0deg) scale(1.4); }
-  to   { transform: rotate(360deg) scale(1.4); }
-}
-
-/* Cards & glass panels breathe + glow */
-@keyframes aura-panel-breathe {
-  0%, 100% { box-shadow: 0 8px 32px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.9); }
-  50%      { box-shadow: 0 16px 48px rgba(236,72,153,0.22), inset 0 1px 0 rgba(255,255,255,0.95); }
-}
+/* ---- Smooth 600ms crossfade for the whole app ---- */
+html.aura-mode,
+html.aura-mode body,
 html.aura-mode .glass,
 html.aura-mode .glass-panel,
 html.aura-mode .glass-modal,
 html.aura-mode .glass-pill {
-  border-color: rgba(139, 92, 246, 0.22) !important;
-  animation: aura-panel-breathe 6s ease-in-out infinite;
+  transition:
+    background-color 600ms ease,
+    background 600ms ease,
+    color 600ms ease,
+    border-color 600ms ease,
+    box-shadow 600ms ease;
 }
 
-/* Primary buttons get an aurora gradient */
-html.aura-mode .btn-primary,
-html.aura-mode button[class*="bg-primary"] {
-  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%) !important;
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4) !important;
+/* ---- Palette override (dark midnight) ---- */
+html.aura-mode {
+  --background: #060816;
+  --foreground: #FFFFFF;
+
+  --card: rgba(18, 24, 42, 0.78);
+  --card-foreground: #FFFFFF;
+  --popover: rgba(11, 16, 35, 0.92);
+  --popover-foreground: #FFFFFF;
+
+  --primary: #6C63FF;
+  --primary-foreground: #FFFFFF;
+
+  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary-foreground: #FFFFFF;
+
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #A9B3D6;
+
+  --accent: rgba(108, 99, 255, 0.16);
+  --accent-foreground: #7B8CFF;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #6C63FF;
 }
 
-/* Headings shimmer subtly */
+/* ---- Deep midnight background + soft animated gradient ---- */
+html.aura-mode body {
+  background:
+    radial-gradient(ellipse 60% 45% at 15% 5%, rgba(108, 99, 255, 0.16), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 85% 25%, rgba(0, 212, 255, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(168, 85, 247, 0.14), transparent 55%),
+    linear-gradient(180deg, #060816 0%, #0B1023 100%);
+  color: #FFFFFF;
+}
+
+/* ---- Ambient aurora sweep (rendered by <AuraFX/>) ---- */
+.aura-aurora {
+  background:
+    conic-gradient(from 0deg at 50% 50%,
+      rgba(108, 99, 255, 0.10),
+      rgba(0, 212, 255, 0.10),
+      rgba(168, 85, 247, 0.10),
+      rgba(123, 140, 255, 0.10),
+      rgba(108, 99, 255, 0.10));
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  animation: aura-aurora-spin 60s linear infinite;
+  filter: blur(20px);
+}
+@keyframes aura-aurora-spin {
+  from { transform: rotate(0deg) scale(1.5); }
+  to   { transform: rotate(360deg) scale(1.5); }
+}
+
+/* ---- Floating particles (rendered by <AuraFX/>) ---- */
+.aura-particle {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.55;
+  animation-name: aura-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+@keyframes aura-drift {
+  0%   { transform: translate(0, 0);       opacity: 0.15; }
+  50%  { transform: translate(20px, -60px); opacity: 0.7; }
+  100% { transform: translate(-10px, -120px); opacity: 0; }
+}
+
+/* ---- Existing ambient orbs recoloured to aurora spectrum ---- */
+html.aura-mode .orb-1 { background: #6C63FF !important; opacity: 0.22 !important; filter: blur(90px) !important; }
+html.aura-mode .orb-2 { background: #A855F7 !important; opacity: 0.20 !important; filter: blur(100px) !important; }
+html.aura-mode .orb-3 { background: #00D4FF !important; opacity: 0.18 !important; filter: blur(95px) !important; }
+
+/* ---- Glass surfaces re-skinned (no layout change) ---- */
+html.aura-mode .glass,
+html.aura-mode .glass-panel,
+html.aura-mode .glass-pill,
+html.aura-mode .glass-modal {
+  background: rgba(18, 24, 42, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(28px) saturate(140%);
+  box-shadow:
+    0 30px 90px rgba(90, 120, 255, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  color: #FFFFFF;
+}
+html.aura-mode .glass:hover,
+html.aura-mode .glass-panel:hover {
+  transform: translateY(-6px) scale(1.005);
+  box-shadow:
+    0 40px 110px rgba(108, 99, 255, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transition: transform 400ms ease, box-shadow 400ms ease;
+}
+
+/* ---- Text colours ---- */
+html.aura-mode,
+html.aura-mode p,
+html.aura-mode span,
+html.aura-mode div,
+html.aura-mode label,
+html.aura-mode li {
+  color: inherit;
+}
+html.aura-mode .text-slate-500,
+html.aura-mode .text-slate-600,
+html.aura-mode .text-muted-foreground { color: #A9B3D6 !important; }
+html.aura-mode .text-slate-700,
+html.aura-mode .text-slate-800,
+html.aura-mode .text-slate-900 { color: #FFFFFF !important; }
+html.aura-mode .text-slate-400 { color: #7F8AB2 !important; }
+
+/* ---- Headlines: soft aurora shimmer ---- */
 @keyframes aura-headline-shimmer {
   0%, 100% { background-position: 0% 50%; }
   50%      { background-position: 100% 50%; }
 }
-html.aura-mode h1, html.aura-mode h2 {
-  background: linear-gradient(90deg, #0F172A 0%, #6D28D9 45%, #DB2777 55%, #0F172A 100%);
+html.aura-mode h1, html.aura-mode h2, html.aura-mode h3 {
+  background: linear-gradient(90deg, #FFFFFF 0%, #7B8CFF 40%, #00D4FF 60%, #FFFFFF 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: aura-headline-shimmer 8s ease-in-out infinite;
+  animation: aura-headline-shimmer 10s ease-in-out infinite;
 }
 
-/* Subtle scroll parallax feel — pin fixed layers */
-html.aura-mode { scroll-behavior: smooth; }
+/* ---- Primary buttons: animated aurora gradient + glow ---- */
+@keyframes aura-btn-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+html.aura-mode .btn-primary,
+html.aura-mode button[class*="bg-primary"]:not(.aura-switch):not(.aura-launcher) {
+  background: linear-gradient(120deg, #6C63FF 0%, #7B8CFF 35%, #00D4FF 65%, #A855F7 100%) !important;
+  background-size: 220% 100% !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 10px 30px rgba(108, 99, 255, 0.45), 0 0 20px rgba(0, 212, 255, 0.25) !important;
+  animation: aura-btn-shimmer 6s ease-in-out infinite;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+html.aura-mode .btn-primary:hover,
+html.aura-mode button[class*="bg-primary"]:not(.aura-switch):not(.aura-launcher):hover {
+  transform: scale(1.04);
+  box-shadow: 0 16px 44px rgba(108, 99, 255, 0.6), 0 0 28px rgba(0, 212, 255, 0.35) !important;
+}
+html.aura-mode .btn-primary:active { transform: scale(0.97); }
 
+/* ---- Secondary buttons: glass ---- */
+html.aura-mode .btn-secondary,
+html.aura-mode button[class*="bg-white"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(12px);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+html.aura-mode .btn-secondary:hover {
+  box-shadow: 0 0 24px rgba(108, 99, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ---- Inputs: glass with focus glow ---- */
+html.aura-mode .input,
+html.aura-mode input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.aura-mode textarea,
+html.aura-mode select {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+html.aura-mode .input:focus,
+html.aura-mode input:focus,
+html.aura-mode textarea:focus,
+html.aura-mode select:focus {
+  border-color: #6C63FF !important;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.25), 0 0 24px rgba(108, 99, 255, 0.25) !important;
+  outline: none;
+}
+html.aura-mode ::placeholder { color: #7F8AB2 !important; }
+
+/* ---- Sidebar / nav glow ---- */
+html.aura-mode aside,
+html.aura-mode nav {
+  background: rgba(11, 16, 35, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(28px) saturate(140%);
+}
+html.aura-mode aside a[aria-current="page"],
+html.aura-mode nav a[aria-current="page"],
+html.aura-mode aside a.active,
+html.aura-mode nav a.active {
+  background: linear-gradient(90deg, rgba(108,99,255,0.18), rgba(0,212,255,0.10)) !important;
+  box-shadow: inset 0 0 0 1px rgba(123,140,255,0.35), 0 0 20px rgba(108,99,255,0.35) !important;
+  color: #FFFFFF !important;
+}
+
+/* ---- Icons soft glow on hover ---- */
+html.aura-mode svg { transition: filter 200ms ease, transform 200ms ease; }
+html.aura-mode a:hover svg,
+html.aura-mode button:hover svg {
+  filter: drop-shadow(0 0 6px rgba(123, 140, 255, 0.7));
+}
+
+/* ---- Agent card ambient glows (by data-agent attribute) ---- */
+html.aura-mode [data-agent="planner"]    { box-shadow: 0 20px 60px rgba(168, 85, 247, 0.30) !important; }
+html.aura-mode [data-agent="marketing"]  { box-shadow: 0 20px 60px rgba(59, 130, 246, 0.30) !important; }
+html.aura-mode [data-agent="finance"]    { box-shadow: 0 20px 60px rgba(16, 185, 129, 0.30) !important; }
+html.aura-mode [data-agent="operations"] { box-shadow: 0 20px 60px rgba(245, 158, 11, 0.30) !important; }
+html.aura-mode [data-agent="website"]    { box-shadow: 0 20px 60px rgba(0, 212, 255, 0.30) !important; }
+
+/* ---- Premium scrollbar ---- */
+html.aura-mode ::-webkit-scrollbar { width: 10px; height: 10px; }
+html.aura-mode ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+html.aura-mode ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6C63FF, #00D4FF);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html.aura-mode ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #7B8CFF, #A855F7); background-clip: padding-box; }
+
+/* ---- Toggle switch (Settings) ---- */
+.aura-switch-on {
+  background: linear-gradient(120deg, #6C63FF, #7B8CFF 40%, #00D4FF 80%, #A855F7);
+  background-size: 220% 100%;
+  animation: aura-btn-shimmer 4s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(108, 99, 255, 0.55);
+}
+
+/* ---- Pulse for live indicators ---- */
+html.aura-mode .pulse-dot {
+  filter: drop-shadow(0 0 6px rgba(108, 99, 255, 0.8));
+}
+
+/* ---- Reduced motion respect ---- */
 @media (prefers-reduced-motion: reduce) {
-  html.aura-mode body::after,
-  html.aura-mode .glass,
-  html.aura-mode .glass-panel,
-  html.aura-mode .glass-modal,
-  html.aura-mode .glass-pill,
-  html.aura-mode h1, html.aura-mode h2,
-  .aura-mode-toggle[data-active="true"] { animation: none !important; }
+  html.aura-mode,
+  html.aura-mode body,
+  html.aura-mode h1, html.aura-mode h2, html.aura-mode h3,
+  html.aura-mode .aura-aurora,
+  html.aura-mode .btn-primary,
+  html.aura-mode .aura-switch-on,
+  .aura-particle {
+    animation: none !important;
+    transition: none !important;
+  }
 }
+
